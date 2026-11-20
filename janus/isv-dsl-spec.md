@@ -190,7 +190,7 @@ Valores dinámicos se pasan como `key=val` por CLI y se sustituyen en `["type", 
 | `isv-add-oidc-app` | `<T>/ui/admin/applications/applications` | appName, companyName, appUrl, redirectUri | selectores verificados |
 | `isv-assign-entitlement` | `<T>/ui/admin/applications/applications` | appName, grantee | flujo verificado |
 
-Ejecución: `node engine.mjs isv-create-group groupName="isv-dsl-group" groupDesc="demo"`.
+Ejecución: `node core/engine.mjs isv-create-group groupName="isv-dsl-group" groupDesc="demo"`.
 ⚠ Los `goal.textMatch` de toast son aproximados (el toast exacto no está capturado); ajustar con el toast real al primer run. Para UI con `setVal` React, el engine usa `type` (Playwright fill) que sí dispara eventos.
 
 ---

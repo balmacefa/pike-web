@@ -24,7 +24,7 @@ elif [ "$ROLE" = "verify" ]; then
 read -r -d '' TASK <<'EOF'
 Eres Pike-ISV-V, worker del enjambre ISV. Canal compartido 'isv' (lee/publica con olimpo_read/olimpo_post; los otros workers lo ven). MISION: desbloquear el provisioning de IBM Verify. Usa el skill JANUS.
 PASOS (resuelve permisos solo, NO preguntes):
-1) Asegura Chrome CDP: en C:/Users/fabia/pike-web corre `bash pike-chrome.sh`. Si cae en login, sigue la ruta JANUS (regla re-auth del skill) para quedar admin en /ui/admin.
+1) Asegura Chrome CDP: en C:/Users/fabia/pike-web corre `bash scripts/pike-chrome.sh`. Si cae en login, sigue la ruta JANUS (regla re-auth del skill) para quedar admin en /ui/admin.
 2) `node janus/janus.mjs snapshot` -> publica resumen (users/groups/apps/idps) en canal isv.
 3) Revisa si YA existe un API client: `node janus/janus.mjs get /v1.0/apiclients` (o la ruta correcta del skill). 
    - Si existe uno util -> reporta su client_id (NUNCA el secret) y marca que n8n puede usarlo.

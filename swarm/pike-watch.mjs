@@ -2,7 +2,7 @@
 // pike-watch — HOOK de notificacion del Olimpo (multi-inbox).
 // Vigila el directorio del Olimpo y, ante una linea nueva con ^D/^F/^W en CUALQUIER
 // canal (inbox privado o comun), dispara un toast de Windows para avisar a Fabian.
-// Uso: node pike-watch.mjs            (vigila todos los *.pact del dir)
+// Uso: node swarm/pike-watch.mjs            (vigila todos los *.pact del dir)
 import fs from 'node:fs';
 import path from 'node:path';
 import { execFile } from 'node:child_process';

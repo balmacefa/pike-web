@@ -7,8 +7,8 @@
 #   N = cuantos workers (def. 2)
 #
 # Coordinar despues:
-#   1-1 privado:  node pike-tell.mjs W1 "mensaje"     (solo W1 lo ve)
-#   broadcast:    node pike-tell.mjs all "mensaje"    (todos los inbox)
+#   1-1 privado:  node swarm/pike-tell.mjs W1 "mensaje"     (solo W1 lo ve)
+#   broadcast:    node swarm/pike-tell.mjs all "mensaje"    (todos los inbox)
 set -u
 N="${1:-2}"
 CWD="C:/Users/fabia/pike-web"
@@ -41,5 +41,5 @@ if [ ! -f "$LOCK" ] || ! kill -0 "$(cat "$LOCK" 2>/dev/null)" 2>/dev/null; then
   echo "pike-watch activo (vigila todos los inbox; toast al completarse)."
 fi
 echo "Listo: $N paneles en Windows Terminal, uno por Pike."
-echo "1-1:        node pike-tell.mjs W1 \"mensaje\""
-echo "broadcast:  node pike-tell.mjs all \"mensaje\""
+echo "1-1:        node swarm/pike-tell.mjs W1 \"mensaje\""
+echo "broadcast:  node swarm/pike-tell.mjs all \"mensaje\""

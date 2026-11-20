@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // pweb — Pike's hands in Chrome. Connects over CDP to an already-running Chrome.
-// Usage: node pweb.mjs <cmd> [args...]   (CDP endpoint via PWEB_CDP, default http://127.0.0.1:9222)
+// Usage: node core/pweb.mjs <cmd> [args...]   (CDP endpoint via PWEB_CDP, default http://127.0.0.1:9222)
 import { chromium } from 'playwright-core';
 
 const CDP = process.env.PWEB_CDP || 'http://127.0.0.1:9222';

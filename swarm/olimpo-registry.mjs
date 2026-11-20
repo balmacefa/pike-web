@@ -11,25 +11,25 @@
  *   (modo daemon). Los comandos one-shot no requieren el lock; `daemon` si (rechaza si ya hay owner vivo).
  *
  * Uso:
- *   node olimpo-registry.mjs status                      panel general (todos los canales)
- *   node olimpo-registry.mjs list [--channel C] [--all] [--json]
- *   node olimpo-registry.mjs channels [--json]           canales + meta + nº workers vivos
- *   node olimpo-registry.mjs tag   <worker> <tag>...     añade tags al worker
- *   node olimpo-registry.mjs untag <worker> <tag>...     quita tags
- *   node olimpo-registry.mjs set   <worker> k=v [k=v...] metadata libre (role, swarm, note, ...)
- *   node olimpo-registry.mjs chtag <channel> <tag>...    tags a nivel canal
- *   node olimpo-registry.mjs show  <worker>              ficha completa de un worker
- *   node olimpo-registry.mjs gc [--channel C] [--yes]    purga peers MUERTOS de los .peers.json
- *   node olimpo-registry.mjs kill  <worker> [--yes]      mata un worker por nombre
- *   node olimpo-registry.mjs kill  --channel C [--yes]   mata TODOS los workers de un canal
- *   node olimpo-registry.mjs kill  --swarm S  [--yes]    mata TODOS los workers con swarm=S (meta)
- *   node olimpo-registry.mjs kill  --all [--yes]         mata TODOS los workers vivos (NO el daemon ni la propia sesión OLIMPO_NAME; usa --include-self para incluirla)
- *   node olimpo-registry.mjs daemon [--interval S]       vigila y reconcilia (SINGLETON)
- *   node olimpo-registry.mjs stop                        detiene el daemon owner
+ *   node swarm/olimpo-registry.mjs status                      panel general (todos los canales)
+ *   node swarm/olimpo-registry.mjs list [--channel C] [--all] [--json]
+ *   node swarm/olimpo-registry.mjs channels [--json]           canales + meta + nº workers vivos
+ *   node swarm/olimpo-registry.mjs tag   <worker> <tag>...     añade tags al worker
+ *   node swarm/olimpo-registry.mjs untag <worker> <tag>...     quita tags
+ *   node swarm/olimpo-registry.mjs set   <worker> k=v [k=v...] metadata libre (role, swarm, note, ...)
+ *   node swarm/olimpo-registry.mjs chtag <channel> <tag>...    tags a nivel canal
+ *   node swarm/olimpo-registry.mjs show  <worker>              ficha completa de un worker
+ *   node swarm/olimpo-registry.mjs gc [--channel C] [--yes]    purga peers MUERTOS de los .peers.json
+ *   node swarm/olimpo-registry.mjs kill  <worker> [--yes]      mata un worker por nombre
+ *   node swarm/olimpo-registry.mjs kill  --channel C [--yes]   mata TODOS los workers de un canal
+ *   node swarm/olimpo-registry.mjs kill  --swarm S  [--yes]    mata TODOS los workers con swarm=S (meta)
+ *   node swarm/olimpo-registry.mjs kill  --all [--yes]         mata TODOS los workers vivos (NO el daemon ni la propia sesión OLIMPO_NAME; usa --include-self para incluirla)
+ *   node swarm/olimpo-registry.mjs daemon [--interval S]       vigila y reconcilia (SINGLETON)
+ *   node swarm/olimpo-registry.mjs stop                        detiene el daemon owner
  *
  *   -- PRESETS (personalidades/especialidades) --
- *   node olimpo-registry.mjs presets [--json]            lista carpetas-preset (con AGENTS.md)
- *   node olimpo-registry.mjs spawn <preset> [name] [opts]  crea PID(s) de worker desde un preset
+ *   node swarm/olimpo-registry.mjs presets [--json]            lista carpetas-preset (con AGENTS.md)
+ *   node swarm/olimpo-registry.mjs spawn <preset> [name] [opts]  crea PID(s) de worker desde un preset
  *       opts: --count N --channel C --cwd D --model M --tools T --swarm S --tag t[,t]
  *             --detach (headless nohup)  --dry-run (muestra sin lanzar)
  *     Un preset = carpeta en OLIMPO_PRESETS_DIR (def ~/.pi/olimpo/presets) con:
@@ -44,7 +44,7 @@ import path from "node:path";
 import os from "node:os";
 import { spawn } from "node:child_process";
 // FUENTE UNICA DE VERDAD compartida con la extension pi (olimpo/core.mjs).
-import { createCore, pidAlive as corePidAlive } from "../.pi/agent/extensions/olimpo/core.mjs";
+import { createCore, pidAlive as corePidAlive } from "../../.pi/agent/extensions/olimpo/core.mjs";
 
 const BASE = process.env.OLIMPO_DIR?.trim() || process.env.PIKEVERSE_DIR?.trim() || path.join(os.homedir(), ".pi", "olimpo");
 const META_FILE = path.join(BASE, "registry.meta.json");
@@ -379,7 +379,7 @@ function cmdSpawn(opts) {
     for (const w of workers) console.log(col("grn", `  ● ${w.wName} @${w.wChannel} (WT)`));
   }
   console.log(col("dim", `\npreset=${presetName}  cwd=${useCwd}  especialidad←${preset.agents}`));
-  console.log(col("dim", `coordinar:  node pike-tell.mjs <nombre> "mensaje"   ·   seguimiento:  node olimpo-registry.mjs list`));
+  console.log(col("dim", `coordinar:  node swarm/pike-tell.mjs <nombre> "mensaje"   ·   seguimiento:  node swarm/olimpo-registry.mjs list`));
   console.log("");
 }
 

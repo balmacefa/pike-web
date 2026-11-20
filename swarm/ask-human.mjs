@@ -6,9 +6,9 @@
 //    - Fallback:   ventana WinForms topmost + sonido (si Aurora no corre).
 //
 // Uso:
-//   node ask-human.mjs "<pregunta o bloqueo>"            (severidad normal = need)
-//   node ask-human.mjs "<...>" blocked                   (bloqueo duro)
-//   node ask-human.mjs "<...>" --from Pike-W3            (firma explicita)
+//   node swarm/ask-human.mjs "<pregunta o bloqueo>"            (severidad normal = need)
+//   node swarm/ask-human.mjs "<...>" blocked                   (bloqueo duro)
+//   node swarm/ask-human.mjs "<...>" --from Pike-W3            (firma explicita)
 // Env: OLIMPO_NAME (firma), OLIMPO_DIR (canales), AURORA_IPC_PORT (def 48123).
 import fs from 'node:fs';
 import path from 'node:path';
@@ -26,7 +26,7 @@ for (let i = 0; i < args.length; i++) {
   rest.push(args[i]);
 }
 const msg = rest.join(' ').trim();
-if (!msg) { console.error('uso: node ask-human.mjs "<pregunta>" [need|blocked] [--from <nombre>]'); process.exit(1); }
+if (!msg) { console.error('uso: node swarm/ask-human.mjs "<pregunta>" [need|blocked] [--from <nombre>]'); process.exit(1); }
 
 // ---- 1) registro PACT (auditoria + pike-watch) ----
 const BASE = process.env.OLIMPO_DIR || 'C:/Users/fabia/.pi/olimpo';

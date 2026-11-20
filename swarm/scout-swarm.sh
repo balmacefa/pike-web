@@ -8,7 +8,7 @@
 #   cwd = carpeta a reconocer (def. Escritorio)
 #
 # Encargar recon después:
-#   dirigido:   node pike-tell.mjs ... (no aplica: canal compartido) -> usa olimpo_post con 'to Scout-S1'
+#   dirigido:   node swarm/pike-tell.mjs ... (no aplica: canal compartido) -> usa olimpo_post con 'to Scout-S1'
 #   al canal:   cualquier Pike publica en el canal 'scout' y el scout libre lo toma
 set -u
 N="${1:-2}"

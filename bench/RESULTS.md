@@ -2,7 +2,7 @@
 
 Chrome CDP 9222, perfil chrome_pike_debug. Workload: portal → lanzar WordPress → SSO → wp-admin.
 
-## Baseline (estilo actual: 1 proceso `node pweb.mjs` por paso + sleeps fijos 3.5s+6s+6s)
+## Baseline (estilo actual: 1 proceso `node core/pweb.mjs` por paso + sleeps fijos 3.5s+6s+6s)
 - Overhead por comando: ~750 ms (relanza Node+Playwright+connect CDP cada vez)
 - Flujo completo: **~15.2 s** (15216 / 15195 / 15134 ms) — y frágil (`--tab N` quebradizo, no siempre llega a wp-admin)
 
@@ -33,4 +33,4 @@ Cuando la sesión IBM caducó, el flujo se recupera SOLO (sin Fabián, el perfil
 La sesión IBM Verify caduca rápido. Re-auth = IBMid → "Continue with Google" (el perfil ya tiene la sesión Google, entra sin clave). Esa parte requiere a Fabián si Google pidiera clave/MFA; el resto es 100% automatizable.
 
 ## Uso
-`node login-flow.mjs [--portal URL] [--quiet]` — imprime JSON {ok, path, user, url, total_ms, marks}.
+`node isv/login-flow.mjs [--portal URL] [--quiet]` — imprime JSON {ok, path, user, url, total_ms, marks}.

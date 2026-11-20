@@ -21,7 +21,7 @@ import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
-const CLI = path.resolve(HERE, "..", "olimpo-registry.mjs");
+const CLI = path.resolve(HERE, "..", "swarm", "olimpo-registry.mjs");
 const CORE_URL = pathToFileURL("C:/Users/fabia/.pi/agent/extensions/olimpo/core.mjs").href;
 const GODOT_PROJ = "C:/Users/fabia/GodotProjects/PikeverseNavigator";
 

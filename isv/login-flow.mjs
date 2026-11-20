@@ -2,7 +2,7 @@
 // login-flow — Pike's optimized + self-healing SSO login (IBM Verify -> WordPress wp-admin).
 // ONE persistent CDP connection, smart waits (no fixed sleeps), state-aware (idempotent),
 // and AUTO re-auth via IBMid -> "Continue with Google" when the IBM session expired.
-// Usage: node login-flow.mjs [--portal URL] [--quiet]
+// Usage: node isv/login-flow.mjs [--portal URL] [--quiet]
 import { chromium } from 'playwright-core';
 
 const CDP = process.env.PWEB_CDP || 'http://127.0.0.1:9222';

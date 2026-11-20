@@ -15,7 +15,7 @@
 //     "Continue with Google / Sign in with X", generic OIDC buttons). If a heuristic moves
 //     the flow forward, it appends the discovered step to the recipe (grows the memory).
 //
-// Usage: node engine.mjs <recipeName|startUrl> [--quiet] [--max=N] [--no-learn] [key=val ...]
+// Usage: node core/engine.mjs <recipeName|startUrl> [--quiet] [--max=N] [--no-learn] [key=val ...]
 import { chromium } from 'playwright-core';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
