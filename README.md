@@ -37,3 +37,32 @@ node core/pweb.mjs tabs         # list open tabs
 ## License
 
 MIT
+
+## Recipe DSL (AI-ready)
+
+Recipes are authored in a compact, line-oriented DSL (`core/recipes.pweb`) that
+compiles to the JSON `engine.mjs` runs. It is ~3x denser than the JSON and far
+easier for a human or an LLM to write without syntax errors. `engine.mjs` loads
+`recipes.pweb` directly (falling back to `recipes.json`).
+
+```
+recipe wp-ibm
+  desc  Login SSO IBM Verify -> wp-admin
+  start https://YOUR-TENANT.verify.ibm.com/usc
+  goal  url /wp-admin
+  user  sel #wpadminbar .display-name
+
+  on text "Cloud Directory"
+    clickText "Sign in another way"
+    wait 600
+    clickText "^IBMid$"
+    waitText "Continue with Google|App center" 15000
+```
+
+Tooling (round-trip is loss-free, validated in `tests/`):
+
+```bash
+node core/compile.mjs   core/recipes.pweb core/recipes.json   # DSL  -> JSON (+ --strict)
+node core/decompile.mjs core/recipes.json core/recipes.pweb   # JSON -> DSL (migrate)
+npm test                                                      # round-trip + validation
+```

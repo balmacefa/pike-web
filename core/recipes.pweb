@@ -1,0 +1,221 @@
+# pike-web recipe DSL (AI-ready). Compile: node core/compile.mjs core/recipes.pweb
+
+recipe wp-ibm
+  desc Login SSO IBM Verify -> WordPress wp-admin (self-healing via IBMid -> Google)
+  domains YOUR-TENANT.verify.ibm.com, login.ibm.com, wordpress-cq8frf4wsxluhjf7qezakz1k.balmacefa.com
+  start https://YOUR-TENANT.verify.ibm.com/usc
+  goal url /wp-admin
+  user sel #wp-admin-bar-my-account .display-name, #wpadminbar .display-name
+
+  on text "Cloud Directory"
+    clickText "Sign in another way"
+    wait 600
+    clickText "^IBMid$"
+    waitText "Continue with Google|App center" 15000
+
+  on text "Continue with Google"
+    clickText "Continue with Google"
+    waitText "App center" 20000
+
+  on text "App center"
+    waitSel ".app-tile-wrapper"
+    openTabClickTile "WordPress Admin"
+
+  on text "Iniciar sesión con IBM Verify"
+    clickAndWaitUrl "IBM Verify" "/wp-admin" 20000
+
+recipe intencion-fabian
+  start https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/attributes
+  goal url /ui/admin/applications/sts-clients
+  meta _recorded "2026-11-01T05:38:07.119Z"
+  meta _draft true
+
+  on text "Attributes"
+    clickText "urn:ietf:params:scim:schemas:extension:ibm:2\\.0:U"
+    clickText "Applications"
+
+  on text "Applications"
+    clickText "Application gateway"
+
+  on text "Application gateway"
+    clickText "Application settings"
+    clickText "Application gateway"
+    clickText "Get started"
+    clickText "Server protocols Incomplete"
+    clickText "Example: https://proxy\\.example\\.com:3128"
+    click "#ag-app-gateway-health-proxy"
+    type "#ag-app-gateway-health-proxy" "proxy"
+    clickText "Cancel"
+    clickText "App role management"
+
+  on text "App role management"
+    clickText "STS clients"
+
+  on text "STS clients"
+    clickText "Identities"
+    clickText "Add STS client"
+    clickText "Client ID \\(optional\\) 0/256"
+    clickText "Client ID \\(optional\\) 0/256"
+    click "#isv--sts-clients-clientId-input"
+    type "#isv--sts-clients-clientId-input" "isv__sts_clients_clientId_input"
+    openTabClickText "Cancel"
+
+recipe isv-create-group
+  desc Crea un grupo via UI (Users>Groups>Add group). Vars: groupName, groupDesc. API-first: SCIM POST /v2.0/Groups.
+  domains YOUR-TENANT.verify.ibm.com
+  start https://YOUR-TENANT.verify.ibm.com/ui/admin/users
+  goal text was created|group created|successfully|added
+  meta _verified "ref-ibm-verify-admin.md Create group (tested e2e)"
+
+  on url "/ui/admin/users"
+    clickText "^Groups$"
+    wait 800
+    clickText "Add group"
+    waitSel "#ci-group-dialog-display-name"
+    click "#ci-group-dialog-display-name"
+    type "#ci-group-dialog-display-name" "groupName"
+    clickText "^Save$"
+
+recipe isv-add-user
+  desc Alta de usuario via UI (Users>Add user). Vars: idp(dropdown), givenName, surname, userName, email. API-first: SCIM POST /v2.0/Users.
+  domains YOUR-TENANT.verify.ibm.com
+  start https://YOUR-TENANT.verify.ibm.com/ui/admin/users
+  goal text was created|user created|successfully|added
+  meta _verified "ref-ibm-verify-admin.md Add user"
+
+  on url "/ui/admin/users"
+    clickText "Add user"
+    waitSel "#ci-user-dialog-user-name"
+    click "#ci-user-dialog-given-name"
+    type "#ci-user-dialog-given-name" "givenName"
+    click "#ci-user-dialog-surname"
+    type "#ci-user-dialog-surname" "surname"
+    click "#ci-user-dialog-user-name"
+    type "#ci-user-dialog-user-name" "userName"
+    click "#ci-user-dialog-email"
+    type "#ci-user-dialog-email" "email"
+    clickText "^Save$"
+
+recipe isv-add-attribute
+  desc Crea atributo custom (4 pasos). Vars: attrName, attrId(solo letras/digitos), attrDesc, attrIdentifier. No hay API verificada de escritura; GET /v1.0/attributes para leer.
+  domains YOUR-TENANT.verify.ibm.com
+  start https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/attributes
+  goal text was created|attribute created|successfully|added
+  meta _verified "ref-ibm-verify-admin.md Add attribute (tested)"
+
+  on url "/attributes"
+    clickText "Add attribute"
+    waitSel "#ci-add-edit-attribute-type-and-availability-step-custom-attribute-tile"
+    click "label[for='ci-add-edit-attribute-type-and-availability-step-custom-attribute-tile']"
+    clickText "^Next$"
+    waitSel "#ci-add-edit-attribute-name-and-description-step-name"
+    click "#ci-add-edit-attribute-name-and-description-step-name"
+    type "#ci-add-edit-attribute-name-and-description-step-name" "attrName"
+    click "#ci-add-edit-attribute-name-and-description-step-description"
+    type "#ci-add-edit-attribute-name-and-description-step-description" "attrDesc"
+    clickText "^Next$"
+    waitSel "#ci-add-edit-attribute-custom-source-step-custom-attribute-name"
+    click "#ci-add-edit-attribute-custom-source-step-custom-attribute-name"
+    type "#ci-add-edit-attribute-custom-source-step-custom-attribute-name" "attrIdentifier"
+    clickText "^Next$"
+    clickText "Add attribute"
+
+recipe isv-add-oidc-idp
+  desc Federa un IdP OIDC Enterprise (tearsheet 6 pasos). Vars: idpName, idpRealm(issuer), friendlyName, clientId, wellknown. Secret lo pega el usuario. Redirect a dar al IdP: https://<tenant>/auth/redirect.
+  domains YOUR-TENANT.verify.ibm.com
+  start https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/identity-providers
+  goal text was created|identity provider|successfully|added
+  meta _verified "ref-ibm-verify-admin.md Add identity provider OIDC Enterprise (tested 2026-10-31)"
+
+  on text "identity provider|Identity providers"
+    clickText "Add identity provider"
+    wait 1200
+    clickText "OIDC Enterprise"
+    clickText "^Next$"
+    waitSel "#cs-identity-source-add-name"
+    click "#cs-identity-source-add-name"
+    type "#cs-identity-source-add-name" "idpName"
+    click "#cs-identity-source-add-realm"
+    type "#cs-identity-source-add-realm" "idpRealm"
+    clickText "^Next$"
+    wait 800
+    clickText "^Next$"
+    waitSel "#cs-identity-source-add-friendly-name"
+    click "#cs-identity-source-add-friendly-name"
+    type "#cs-identity-source-add-friendly-name" "friendlyName"
+    click "#cs-identity-source-add-client-id"
+    type "#cs-identity-source-add-client-id" "clientId"
+    click "#cs-identity-source-add-wellknown-endpoint"
+    type "#cs-identity-source-add-wellknown-endpoint" "wellknown"
+
+recipe isv-add-oidc-app
+  desc Crea aplicacion OpenID Connect. Vars: appName, companyName, appUrl, redirectUri. client_id/secret se generan al guardar. API-first lectura: GET /v1.0/applications.
+  domains YOUR-TENANT.verify.ibm.com
+  start https://YOUR-TENANT.verify.ibm.com/ui/admin/applications/applications
+  goal text application was|was updated|was created|successfully
+  meta _verified "ref-ibm-verify-admin.md Add an application + OIDC app General/Sign-on (tested 2026-10-31)"
+
+  on url "/applications"
+    clickText "Add application"
+    waitSel "#ci-application-type-picker-search"
+    click "#ci-application-type-picker-search"
+    type "#ci-application-type-picker-search" "OpenID Connect"
+    wait 800
+    clickText "OpenID Connect"
+    clickText "Add application"
+    waitSel "#app-name-input"
+    click "#app-name-input"
+    type "#app-name-input" "appName"
+    click "#cs-guixml-companyName"
+    type "#cs-guixml-companyName" "companyName"
+    clickText "^Save$"
+
+recipe isv-assign-entitlement
+  desc Asigna acceso (entitlement) a una app via tab Entitlements. Vars: appName, grantee. Flujo: abrir app, tab Entitlements, Automatic access (todos) o Select users/groups. API lectura: POST /v1.0/entitlements/search.
+  domains YOUR-TENANT.verify.ibm.com
+  start https://YOUR-TENANT.verify.ibm.com/ui/admin/applications/applications
+  goal text was updated|access|workflow|successfully
+  meta _verified "ref-ibm-verify-admin.md App Entitlements tab"
+
+  on url "/applications"
+    clickText "appName"
+    wait 800
+    clickText "Entitlements"
+    wait 800
+    clickText "Automatic access for all users and groups"
+    clickText "^OK$"
+    clickText "^Save$"
+
+recipe lagar-flujo
+  start https://www.ellagar.com/
+  goal url /ECOMMERCE/DetalleArticulo/7054067/cepillo-acero-con-mango-4-lineas--pro
+  meta _recorded "2026-11-03T04:10:34.316Z"
+  meta _draft true
+
+  on text "GUÍA DE PRODUCTOS"
+    click "div.col:nth-of-type(1) > div.react-autosuggest__container > div.input-group:nth-of-type(1) > input.react-autosuggest__input"
+    type "div.col:nth-of-type(1) > div.react-autosuggest__container > div.input-group:nth-of-type(1) > input.react-autosuggest__input" "Buscar"
+
+  on text "CARRITO DE COMPRAS"
+    clickText "Cepillo Acero Con Mango 4 Lineas \\+ Pro"
+
+  on text "Cepillo Acero Con Mango 4 Lineas \\+ Pro"
+    click "div.col:nth-of-type(1) > div.react-autosuggest__container > div.input-group:nth-of-type(1) > input.react-autosuggest__input"
+    click "div.col:nth-of-type(1) > div.react-autosuggest__container > div.input-group:nth-of-type(1) > input.react-autosuggest__input"
+
+recipe runpod-login
+  desc Login Google SSO -> console.runpod.io dashboard
+  domains console.runpod.io, accounts.google.com
+  start https://console.runpod.io/
+  goal url console.runpod.io/$|console.runpod.io/?|/pods|/serverless
+  user text Hello,
+  meta auth "google-sso"
+  meta note "Sesion normalmente persiste en el perfil chrome_pike_debug; el recorder puede refinar los selectores de Google si cambian."
+
+  on text "Create your account|Sign in"
+    clickText "(Sign up|Sign in) with Google"
+    wait 1500
+
+  on text "Choose an account|demo-user"
+    clickText "demo-user"
+    waitText "Hello," 15000

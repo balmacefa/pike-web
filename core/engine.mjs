@@ -20,9 +20,12 @@ import { chromium } from 'playwright-core';
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { compile, decompile } from './dsl.mjs';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const BOOK = resolve(HERE, 'recipes.json');
+const PWEB = resolve(HERE, 'recipes.pweb');
+const JSONB = resolve(HERE, 'recipes.json');
+const BOOK_SRC = existsSync(PWEB) ? 'pweb' : 'json';
 const CDP = process.env.PWEB_CDP || 'http://127.0.0.1:9222';
 const argv = process.argv.slice(2);
 const target = argv.find(a => !a.startsWith('--') && !a.includes('='));
@@ -38,7 +41,9 @@ function out(o){ console.log(JSON.stringify(o)); }
 const rx = (m) => (m instanceof RegExp ? m : new RegExp(m,'i'));
 
 // ---- Recipe book (memory on disk; Pike syncs to L2) ----------------------------------
-const book = existsSync(BOOK) ? JSON.parse(readFileSync(BOOK,'utf8')) : { recipes:{} };
+const book = BOOK_SRC === 'pweb' ? compile(readFileSync(PWEB,'utf8'))
+  : existsSync(JSONB) ? JSON.parse(readFileSync(JSONB,'utf8'))
+  : { recipes:{} };
 function findRecipe(t){
   if (book.recipes[t]) return book.recipes[t];                                   // by name
   const host = (() => { try { return new URL(t).host; } catch { return null; } })();
@@ -140,7 +145,7 @@ async function run(){
   }
   out({ ok:false, state:'MAX_STEPS', msg:'no alcanzó el goal', marks }); process.exit(2);
 }
-function saveBook(){ try{ writeFileSync(BOOK, JSON.stringify(book,null,2)); mark('recipe-updated'); }catch{} }
+function saveBook(){ try{ if (BOOK_SRC === 'pweb') writeFileSync(PWEB, decompile(book)); else writeFileSync(JSONB, JSON.stringify(book,null,2)); mark('recipe-updated'); }catch{} }
 async function finish(page, path){ out({ ok:true, recipe:recipe.name, path, user:await userName(page), url:page.url(), total_ms:Date.now()-t0, marks }); process.exit(0); }
 
 await run();
