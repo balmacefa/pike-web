@@ -1,16 +1,16 @@
 ---
 name: "isv-dsl-spec"
-author: "Pike-ISV-D (DSL-author, enjambre ISV)"
+author: "pike-web"
 updated: "2026-11-01"
 description: "Catálogo DSL formal de IBM Verify: puente op-Verify → request REST → receta engine.mjs → nodo/plantilla n8n. Fuente para AUTO-GENERAR workflows en vez de hacerlos a mano."
 ---
 
 # ISV DSL Spec — catálogo de operaciones IBM Verify
 
-Consolida lo verificado por el enjambre:
-- **Pike-ISV-V** — mapeo del tenant + ops REST (sesión admin / token API client) y wizards UI (ref `janus/ref-ibm-verify-admin.md`).
-- **Pike-ISV-N** — plantillas de workflow n8n (workflow `HqNhDPFlJEKh5Z2t`, credencial `lRgURi90b9DGfmjD`).
-- **Pike-ISV-D** (este doc) — recetas `engine.mjs` en `recipes.json` y el puente op→REST→receta→nodo.
+Catalogo consolidado de operaciones IBM Verify (REST / engine.mjs / n8n):
+- mapeo del tenant + ops REST (sesión admin / token API client) y wizards UI (ref `janus/ref-ibm-verify-admin.md`).
+- plantillas de workflow n8n (workflow `HqNhDPFlJEKh5Z2t`, credencial `lRgURi90b9DGfmjD`).
+- recetas (este doc): `engine.mjs` en `recipes.json` y el puente op→REST→receta→nodo.
 
 Tenant: `https://YOUR-TENANT.verify.ibm.com` (abreviado `<T>` abajo).
 
@@ -32,7 +32,7 @@ Cada operación de Verify se puede ejecutar por **3 carriles equivalentes**; el 
 
 ## 1. TABLA PUENTE op-Verify → REST → receta engine → nodo n8n
 
-Leyenda: ✅ = request REST verificado 200/201 JSON por Pike-ISV-V. Headers SCIM: `Authorization: Bearer <token>`, `Content-Type: application/scim+json`, `Accept: application/scim+json`. JSON normal: `application/json`.
+Leyenda: ✅ = request REST verificado 200/201 JSON. Headers SCIM: `Authorization: Bearer <token>`, `Content-Type: application/scim+json`, `Accept: application/scim+json`. JSON normal: `application/json`.
 
 ### 1.1 Autenticación (prerrequisito de todo carril REST/n8n)
 
@@ -64,7 +64,7 @@ Leyenda: ✅ = request REST verificado 200/201 JSON por Pike-ISV-V. Headers SCIM
 | **get-user** ✅ | GET | `/v2.0/Users/{id}` / `/v2.0/Me` | — | SCIM | — | HTTP Request GET |
 | **create-user** ✅ (201) | POST | `/v2.0/Users` | ver body canónico | **AMBOS**: `core:2.0:User` + `extension:ibm:2.0:User` (realm=`cloudIdentityRealm`, userCategory=`regular`) | **`isv-add-user`** (Users>Add user; `#ci-user-dialog-*`) | **`ISV-TPL: create-user`** id=`tgtDtQzx7SX8mXPy` ✓match |
 
-**Body canónico create-user** (verificado 201 por Pike-ISV-V, `isv-dsl-templates.json`):
+**Body canónico create-user** (verified 201):
 ```json
 {
   "schemas": ["urn:ietf:params:scim:schemas:core:2.0:User","urn:ietf:params:scim:schemas:extension:ibm:2.0:User"],
@@ -84,7 +84,7 @@ Leyenda: ✅ = request REST verificado 200/201 JSON por Pike-ISV-V. Headers SCIM
 | **list-attributes** ✅ | GET | `/v1.0/attributes` (array; custom tienen `id`,`name`,`datatype`) | — | — | HTTP Request GET |
 | **add-attribute** ✅ (201, sourceType static) | POST | `/v1.0/attributes` | ver body canónico | **`isv-add-attribute`** (UI 4 pasos; para rule-based) | **`ISV-TPL: add-attribute`** id=`3C9ZIh5IHdtGSPnE` ✓match |
 
-**Body canónico add-attribute** (verificado 201 por Pike-ISV-V):
+**Body canónico add-attribute** (verified 201):
 ```json
 {
   "name": "<attrName>", "description": "<description>", "scope": "global",
@@ -102,7 +102,7 @@ Leyenda: ✅ = request REST verificado 200/201 JSON por Pike-ISV-V. Headers SCIM
 | **list-idp-types** ✅ | GET | `/v1.0/identitysourcetypes` (19 tipos) | — | — | HTTP Request GET |
 | **add-oidc-idp** ✅ (201) | POST | `/v2.0/identitysources` | ver body canónico (sourceTypeId=19, properties[]) | **`isv-add-oidc-idp`** (tearsheet 6 pasos) | **`ISV-TPL: add-oidc-idp`** (N crea, id pendiente) |
 
-**Body canónico add-oidc-idp** (verificado 201 por Pike-ISV-V; `sourceTypeId:19`=OIDC Enterprise, `properties` = array `{key,value}`):
+**Body canónico add-oidc-idp** (verified 201):
 ```json
 {
   "instanceName": "<idpName>", "enabled": false, "sourceTypeId": 19,
@@ -127,7 +127,7 @@ Redirect URI a entregar al IdP: **`<T>/auth/redirect`**. Targets reservados (err
 | **list-apps** ✅ | GET | `/v1.0/applications` (`_embedded.applications[]`: name, templateId, id=último seg. de `_links.self.href`) | — | — | HTTP Request GET |
 | **add-oidc-app** ✅ (201) | POST | `/v1.0/applications` | ver body canónico (templateId=998) | **`isv-add-oidc-app`** (type picker `OpenID Connect`) | **`ISV-TPL: add-oidc-app`** (N crea, id pendiente) |
 
-**Body canónico add-oidc-app** (verificado 201 por Pike-ISV-V; `templateId:"998"`, grantTypes como strings `"true"/"false"`):
+**Body canónico add-oidc-app** (verified 201):
 ```json
 {
   "name": "<appName>", "templateId": "998", "type": "OpenID Connect", "description": "<description>",
@@ -148,7 +148,7 @@ Redirect URI a entregar al IdP: **`<T>/auth/redirect`**. Targets reservados (err
 | **search-entitlements** ✅ | POST | `/v1.0/entitlements/search` (app roles) | filtro | — | HTTP Request POST |
 | **search-admin-entitlements** ✅ | POST | `/v1.0/admin/entitlements/search` | filtro | — | HTTP Request POST |
 
-**Body canónico assign-group-member** (verificado 204 por Pike-ISV-V; SCIM PatchOp):
+**Body canónico assign-group-member** (verified 204):
 ```json
 {
   "schemas": ["urn:ietf:params:scim:api:messages:2.0:PatchOp"],
@@ -164,7 +164,7 @@ Redirect URI a entregar al IdP: **`<T>/auth/redirect`**. Targets reservados (err
 | op | method | path | body | receta engine | nodo n8n |
 |---|---|---|---|---|---|
 | **list-apiclients** ✅ (hoy total=0) | GET | `/v1.0/apiclients` | — | — | HTTP Request GET |
-| **create-apiclient** | — (UI, regla 3 JANUS = lo crea Fabián) | Security>API access>Add API client | entitlements `manageUsers`+`manageGroups` (+`manageGroupMembers` si SCIM members[]) | (wizard pre-staged por Pike-ISV-V) | — |
+| **create-apiclient** | — (UI, regla 3 JANUS = lo crea Fabián) | Security>API access>Add API client | entitlements `manageUsers`+`manageGroups` (+`manageGroupMembers` si SCIM members[]) | (wizard pre-staged) | — |
 
 ### 1.9 Reportes (read-only)
 
@@ -205,7 +205,7 @@ Para generar un workflow n8n desde una op del catálogo:
 4. Parametrizar body con los `vars` de la receta engine equivalente (mismos nombres → trazabilidad UI↔REST↔n8n).
 5. Dejar el workflow **INACTIVO** con prefijo `ISV-TPL:` hasta validación + OK de Fabián.
 
-**Mapa op→nodo (consolidado con Pike-ISV-N):**
+**Mapa op→nodo:**
 ```
 create-group       → HTTP POST /v2.0/Groups   (SCIM, 2 schemas)       → ISV-TPL: create-group       id=QsHnjeuHHXZBweMW
 create-user        → HTTP POST /v2.0/Users     (SCIM)                  → ISV-TPL: create-user        id=tgtDtQzx7SX8mXPy
@@ -220,12 +220,12 @@ bulk-provision     → Get Token → SplitInBatches → create-user xN        �
 
 ## 4. Pendientes / gaps a cerrar
 
-- [x] **Bodies REST verificados** (Pike-ISV-V ^D !2, `isv-dsl-templates.json`): `create-group` ✓201, `create-user` ✓201 (ext IBM realm=cloudIdentityRealm), `create-attribute` ✓201 (static+value).
-- [x] **assign-group-member verificado** (Pike-ISV-V, PATCH /v2.0/Groups/{id} PatchOp add members, `type:"user"` obligatorio, ✓204). App-level entitlement = solo UI (fuera de API).
-- [x] **add-oidc-idp y add-oidc-app VERIFICADOS** (Pike-ISV-V ^D !3, ✓201): POST /v2.0/identitysources (sourceTypeId 19) y POST /v1.0/applications (templateId 998). Bodies canónicos en §1.5/§1.6. **CATÁLOGO 100% cubierto por REST.**
-- [ ] **Ids ISV-TPL de add-oidc-idp/add-oidc-app**: Pike-ISV-N los crea con estos bodies; integrar ids a §1.5/§1.6 y Mapa op->nodo cuando los pase.
-- [x] **`isv-catalog.json` integrado** (Pike-ISV-V, 177KB, 18 endpoints, secretos redactados): users=2, groups=8, apps=2, identitysources=3, attributes=61, policies=18, apiclients=0, admin_roles=9. Recursos de prueba creados: group `isv-dsl-group`(8A500033P2), user `isv-dsl-user`(8A40002O72), attr `isvDslAttr`(98800b6f-...fdd3) — DELETE en §5.
-- [x] **Ids `ISV-TPL:*` integrados** (Pike-ISV-N, inventario `janus/isv-n8n-inventory.json`, todos INACTIVOS, cred httpCustomAuth `lRgURi90b9DGfmjD`, 5/5 revalidados 0err/0warn): create-group `QsHnjeuHHXZBweMW`, create-user `tgtDtQzx7SX8mXPy`, add-attribute `3C9ZIh5IHdtGSPnE`, bulk-provision `mAmxzIooQm09mZug`, assign-entitlement `tPjRvWuC26nybz8j` (provisional, PATCH Groups/{id} add members — a confirmar con hook fetch de V).
+- [x] **Bodies REST verificados** : `create-group` ✓201, `create-user` ✓201 (ext IBM realm=cloudIdentityRealm), `create-attribute` ✓201 (static+value).
+- [x] **assign-group-member verificado** . App-level entitlement = solo UI (fuera de API).
+- [x] **add-oidc-idp y add-oidc-app VERIFICADOS** : POST /v2.0/identitysources (sourceTypeId 19) y POST /v1.0/applications (templateId 998). Bodies canónicos en §1.5/§1.6. **CATÁLOGO 100% cubierto por REST.**
+- [ ] **Ids ISV-TPL de add-oidc-idp/add-oidc-app**:  los crea con estos bodies; integrar ids a §1.5/§1.6 y Mapa op->nodo cuando los pase.
+- [x] **`isv-catalog.json` integrado** : users=2, groups=8, apps=2, identitysources=3, attributes=61, policies=18, apiclients=0, admin_roles=9. Recursos de prueba creados: group `isv-dsl-group`(8A500033P2), user `isv-dsl-user`(8A40002O72), attr `isvDslAttr`(98800b6f-...fdd3) — DELETE en §5.
+- [x] **Ids `ISV-TPL:*` integrados** : create-group `QsHnjeuHHXZBweMW`, create-user `tgtDtQzx7SX8mXPy`, add-attribute `3C9ZIh5IHdtGSPnE`, bulk-provision `mAmxzIooQm09mZug`, assign-entitlement `tPjRvWuC26nybz8j` (provisional, PATCH Groups/{id} add members — a confirmar con hook fetch de V).
 - [ ] **manageGroupMembers**: si el provisioning vincula user↔group (members[] en SCIM), el API client necesita además la entitlement "Manage all groups and their members".
 - [ ] **Confirmar toasts de éxito** de cada receta UI para fijar `goal.textMatch`.
 
@@ -236,7 +236,7 @@ bulk-provision     → Get Token → SplitInBatches → create-user xN        �
 - `C:/Users/fabia/pike-web/recipes.json` — recetas engine (UI).
 - `C:/Users/fabia/pike-web/engine.mjs` — intérprete del DSL.
 - `C:/Users/fabia/pike-web/janus/ref-ibm-verify-admin.md` — mapa API + selectores verificados (fuente).
-- `C:/Users/fabia/pike-web/janus/isv-catalog.json` — catálogo exhaustivo del tenant (Pike-ISV-V, 177KB, secretos redactados). ✅
+- `janus/isv-catalog.json (excluded from public repo)` — catálogo exhaustivo del tenant . ✅
 - `C:/Users/fabia/pike-web/janus/isv-dsl-templates.json` — plantillas REST verificadas (create-group/user/attribute, bodies exactos). ✅
 - `C:/Users/fabia/pike-web/janus/isv-dsl-spec.md` — este puente op→REST→receta→n8n.
 
