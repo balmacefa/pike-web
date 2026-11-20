@@ -1,8 +1,6 @@
 # pike-web
 
-Browser/swarm toolbox that drives a running Chrome over CDP (DevTools 9222) to
-automate web flows, record declarative recipes, and coordinate a small swarm of
-agent workers ("Olimpo"). Node ESM, depends on `playwright-core`.
+Browser toolbox that drives a running Chrome over CDP (DevTools 9222) to automate web flows and record declarative recipes. Node ESM, depends on `playwright-core`.
 
 > Public release: tenant-specific data, admin screenshots and personal
 > identifiers have been redacted/removed. Hostnames like
@@ -17,7 +15,6 @@ agent workers ("Olimpo"). Node ESM, depends on `playwright-core`.
 | `engine.mjs` | Runs declarative recipes from `recipes.json` (self-healing state machine) |
 | `recorder.mjs` + `recorder-inject.js` | Record human interaction into a recipe draft |
 | `janus/` | IBM Verify ("JANUS") automation layer: runner, in-page kit, references |
-| `olimpo-registry.mjs`, `pike-*.mjs/.sh` | Swarm plumbing: workers, inbox, escalation |
 | `tests/` | CLI/worker test suite |
 
 ## Requirements
