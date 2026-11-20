@@ -15,9 +15,7 @@ Browser toolbox that drives a running Chrome over CDP (DevTools 9222) to automat
 | `scripts/` | Launchers: start Chrome in CDP debug mode (`pike-chrome.sh` / `.cmd`), `cockpit.bat` |
 | `janus/` | IBM Verify ("JANUS") automation layer: runner, in-page kit, recorder, references |
 | `isv/` | Demo auth flows against IBM Verify / ISV: login, SCIM, n8n injection, simulators |
-| `swarm/` | Worker coordination plumbing: registry, inbox (`pike-tell`), watch, escalation |
 | `bench/` | Benchmark/reset helpers |
-| `tests/` | CLI/worker test suite |
 
 ## Requirements
 
