@@ -1,0 +1,101 @@
+{
+  "generatedBy": "Pike-ISV-N",
+  "phase": "FASE-2 MAP+TEMPLATES",
+  "n8n": {
+    "workflows": [
+      { "id": "G8jbumL0sLvU99m6", "name": "My workflow", "active": false, "nodeCount": 2, "note": "sandbox/demo" },
+      { "id": "f4D0k8lDEzprO7RS", "name": "Pike: MCP Server demo", "active": false, "nodeCount": 2 },
+      { "id": "HqNhDPFlJEKh5Z2t", "name": "Verify: provisionar datos", "active": false, "nodeCount": 4, "note": "PROD target - refactorizado seguro (FASE-1)" },
+      { "id": "DOk32fMBEP9rHxCH", "name": "Contact — balmacefa.com", "active": true, "nodeCount": 6, "note": "NO TOCAR - prod activo" }
+    ],
+    "credentials": [
+      { "id": "lRgURi90b9DGfmjD", "name": "IBM Verify - Client Credentials (SCIM)", "type": "httpCustomAuth", "note": "secret va aqui (campo json), 1 solo lugar" },
+      { "id": "bXgnsHV7Qvype30K", "name": "demo-user", "type": "gmailOAuth2", "note": "usado por workflow Contact" },
+      { "id": "UDOahacpStSXHeZh", "name": "IBM Verify - ROPC Client (login sim)", "type": "httpCustomAuth", "note": "client_id/secret del app ROPC (grant=password) para simulate-logins; placeholder, 1 solo lugar. DISTINTO del client SCIM." }
+    ],
+    "relevantNodeTypes": [
+      "n8n-nodes-base.manualTrigger",
+      "n8n-nodes-base.httpRequest (v4.5)",
+      "n8n-nodes-base.set (v3.4)",
+      "n8n-nodes-base.code (v2)",
+      "n8n-nodes-base.splitInBatches (v3)",
+      "n8n-nodes-base.if",
+      "n8n-nodes-base.merge"
+    ]
+  },
+  "verifyBase": "https://YOUR-TENANT.verify.ibm.com",
+  "tokenEndpoint": "POST /v1.0/endpoint/default/token (grant_type=client_credentials, auth via httpCustomAuth cred lRgURi90b9DGfmjD)",
+  "templateLibrary": [
+    {
+      "id": "QsHnjeuHHXZBweMW", "name": "ISV-TPL: create-group", "active": false,
+      "op": "create-group", "verifyCall": "POST /v2.0/Groups (SCIM)",
+      "params": ["displayName", "description"],
+      "flow": "Trigger -> Params(Set) -> Get Token -> Create Group (SCIM)"
+    },
+    {
+      "id": "tgtDtQzx7SX8mXPy", "name": "ISV-TPL: create-user", "active": false,
+      "op": "create-user", "verifyCall": "POST /v2.0/Users (SCIM)",
+      "params": ["userName", "givenName", "familyName", "email"],
+      "flow": "Trigger -> Params(Set) -> Get Token -> Create User (SCIM)",
+      "status": "RECONCILED con isv-dsl-templates.json de V: 2 schemas (core+ibm), realm=cloudIdentityRealm, userCategory=regular"
+    },
+    {
+      "id": "3C9ZIh5IHdtGSPnE", "name": "ISV-TPL: add-attribute", "active": false,
+      "op": "add-attribute", "verifyCall": "POST /v1.0/attributes (application/json)",
+      "params": ["attrName", "attrDescription", "datatype"],
+      "params": ["attrName", "attrDescription", "value", "displayName"],
+      "flow": "Trigger -> Params(Set) -> Get Token -> Add Attribute",
+      "status": "RECONCILED con isv-dsl-templates.json de V: sourceType=static EXIGE value; scope=global, datatype=string, tags=[isv-dsl]. Attr rule-based requiere wizard UI (no API)"
+    },
+    {
+      "id": "tPjRvWuC26nybz8j", "name": "ISV-TPL: assign-entitlement", "active": false,
+      "op": "assign-entitlement (user -> group membership)", "verifyCall": "PATCH /v2.0/Groups/{groupId} (SCIM PatchOp add members)",
+      "params": ["groupId", "userId"],
+      "flow": "Trigger -> Params(Set) -> Get Token -> Add Member to Group (SCIM PATCH)",
+      "requiresEntitlement": "manageGroupMembers (Manage all groups and their members)",
+      "status": "RECONCILED con isv-dsl-templates.json de V (assign-group-member ✓204): member value exige type='user' (solo user|group; falta->400 CSIAI0093E, invalido->400 CSIAI0097E). Exito=204 SIN body (n8n NO lo trata como error); verificar con GET /v2.0/Groups/{id}. op=remove para desasignar."
+    },
+    {
+      "id": "1r5q79RCpmCYY7kY", "name": "ISV-TPL: add-oidc-idp", "active": false,
+      "op": "add-oidc-idp", "verifyCall": "POST /v2.0/identitysources (application/json)",
+      "params": ["idpName", "friendlyName", "issuerUrl", "clientId", "clientSecret", "wellknownEndpoint", "authorizationEndpoint", "tokenEndpoint", "userinfoEndpoint", "jwksUri"],
+      "flow": "Trigger -> Params(Set) -> Get Token -> Add OIDC IdP",
+      "status": "RECONCILED con isv-dsl-templates.json de V (add-oidc-idp \u2713201): sourceTypeId=19 (OIDC Enterprise). friendly_name SIN espacios (->400 CSIAG0625E). enabled:false hasta validar. OBLIGATORIAS: supported_grant_types/forward_max_age/forward_login_hint/forward_prompt/realm/pkce_support/client_secret/scopes/client_id.",
+      "secret": "clientSecret es SECRETO: parametrizado como placeholder PASTE_OIDC_CLIENT_SECRET en nodo Params. No puede inyectarse via credencial httpCustomAuth porque va dentro del array properties[]. Recomendacion: usar n8n Variables ($vars) o mantener el workflow con acceso restringido. 1 solo lugar a editar (campo clientSecret del nodo Params)."
+    },
+    {
+      "id": "YA7Elnja8XADByPY", "name": "ISV-TPL: add-oidc-app", "active": false,
+      "op": "add-oidc-app", "verifyCall": "POST /v1.0/applications (application/json)",
+      "params": ["appName", "description", "applicationUrl", "redirectUri"],
+      "flow": "Trigger -> Params(Set) -> Get Token -> Add OIDC App",
+      "status": "RECONCILED con isv-dsl-templates.json de V (add-oidc-app \u2713201): templateId=998, type=OpenID Connect. clientId/clientSecret SE AUTOGENERAN en save (no enviar); leer luego con GET /v1.0/applications/{id}. id = ultimo segmento de _links.self.href. grantTypes como strings true/false."
+    },
+    {
+      "id": "mAmxzIooQm09mZug", "name": "ISV-TPL: bulk-provision", "active": false,
+      "op": "bulk-provision", "verifyCall": "POST /v2.0/Users (SCIM) x N",
+      "params": ["users[] editable en nodo Build Users (Code)"],
+      "flow": "Trigger -> Get Token -> Build Users (Code) -> Loop Over Items (SplitInBatches) -> Create User (SCIM) -> loop",
+      "status": "RECONCILED: body create-user alineado (2 schemas + realm cloudIdentityRealm)"
+    }
+  ],
+  "validation": "5/5 plantillas valid=true, 0 errores, 0 warnings (post-reconciliacion con isv-dsl-templates.json de Pike-ISV-V)",
+  "reconciliation": "TODAS reconciliadas con bodies verificados de V: create-group 1:1; create-user/bulk-provision (201, 2 schemas+realm); add-attribute (201, static+value); assign-entitlement (204, assign-group-member con type=user). App-level entitlement NO mapeado (requiere UI).",
+  "note_app_entitlement": "Dar acceso a una APP != membresia de grupo; se hace en pestana Entitlements de la app (UI), API de escritura no mapeada. Para provisioning estandar basta assign-group-member + politicas que referencian el grupo.",
+  "note_204": "assign-entitlement devuelve 204 sin body; el nodo HTTP Request de n8n lo acepta OK. Validar efecto con GET /v2.0/Groups/{id}.",
+  "simulateLogins": {
+    "id": "in93aKOtq3cAR1R5", "name": "ISV-TPL: simulate-logins", "active": false,
+    "purpose": "Simular login masivo via ROPC (envuelve simulate-logins-ropc.mjs de Pike-ISV-D)",
+    "verifyCall": "POST /oauth2/token grant_type=password (OIDC token endpoint)",
+    "flow": "Trigger -> Build Users (Code: [{username,password}]) -> Loop Over Logins (SplitInBatches batch=5) -> ROPC Login (onError=continueRegularOutput, neverError) -> Tally Result (ok/status) -> loop",
+    "credential": "UDOahacpStSXHeZh (httpCustomAuth, client_id/secret ROPC)",
+    "params": ["users[] en nodo Build Users (username+password)", "batchSize en Loop Over Logins (throttle)"],
+    "dependencies": "Pike-ISV-V debe: (1) crear app OIDC con ropc:true via add-oidc-app y entregar client_id/secret -> pegar en credencial UDOahacpStSXHeZh; (2) provisionar usuarios con password conocido. Fabian: definir objetivo+escala. Si politica fuerza MFA, ROPC falla -> usar carril web-authcode.",
+    "status": "PRE-CONSTRUIDO inactivo, validado 0err/0warn. Opcional (paso 2 del plan de D), a la espera de priorizacion de Pike-ISV-0."
+  },
+  "all_reconciled": true,
+  "coverage": "100% - 7 plantillas ISV-TPL (create-group, create-user, add-attribute, assign-entitlement, bulk-provision, add-oidc-idp, add-oidc-app). Catalogo DSL cubre provisioning SCIM core + membresias + bulk + federacion OIDC + apps OIDC.",
+  "delete_test_resources_V_oidc": { "oidcApp": "DELETE /v1.0/applications/1575943302248883312", "oidcIdp": "DELETE /v2.0/identitysources/e4071a86-996f-4157-a5ec-31cb6f527f8c" },
+  "delete_test_resources_V": { "group": "DELETE /v2.0/Groups/8A500033P2", "user": "DELETE /v2.0/Users/8A40002O72", "attribute": "DELETE /v1.0/attributes/98800b6f-a641-4624-a650-9d6c9793fdd3" },
+  "contentType": "application/scim+json para /v2.0/*; application/json para /v1.0/*",
+  "security": "Ninguna plantilla contiene tokens ni secrets; todo via credencial httpCustomAuth"
+}

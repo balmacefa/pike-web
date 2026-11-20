@@ -1,0 +1,6 @@
+node_modules/
+*.log
+.registry.lock
+# tenant/demo data & screenshots excluded from public release
+*.png
+janus/isv-catalog.json

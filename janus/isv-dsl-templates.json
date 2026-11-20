@@ -1,0 +1,412 @@
+{
+  "generatedAt": "2026-11-01",
+  "by": "Pike-ISV-V",
+  "tenant": "YOUR-TENANT.verify.ibm.com",
+  "note": "Plantillas de ops IBM Verify VERIFICADAS via token de sesion admin (no requieren API client). {{param}} = sustituir. Bodies sin secretos. Auth = header Authorization del token admin (en n8n: Bearer del client_credentials).",
+  "ops": {
+    "create-group": {
+      "verified": true,
+      "status": 201,
+      "method": "POST",
+      "path": "/v2.0/Groups",
+      "headers": {
+        "Content-Type": "application/scim+json",
+        "Accept": "application/scim+json"
+      },
+      "body": {
+        "schemas": [
+          "urn:ietf:params:scim:schemas:core:2.0:Group",
+          "urn:ietf:params:scim:schemas:extension:ibm:2.0:Group"
+        ],
+        "displayName": "{{groupName}}",
+        "urn:ietf:params:scim:schemas:extension:ibm:2.0:Group": {
+          "description": "{{description}}"
+        }
+      },
+      "notes": "Ambos schemas OBLIGATORIOS (falta IBM schema -> 400 CSIAI0137E). Respuesta 201, id en data.id."
+    },
+    "create-user": {
+      "verified": true,
+      "status": 201,
+      "method": "POST",
+      "path": "/v2.0/Users",
+      "headers": {
+        "Content-Type": "application/scim+json",
+        "Accept": "application/scim+json"
+      },
+      "body": {
+        "schemas": [
+          "urn:ietf:params:scim:schemas:core:2.0:User",
+          "urn:ietf:params:scim:schemas:extension:ibm:2.0:User"
+        ],
+        "userName": "{{userName}}",
+        "name": {
+          "givenName": "{{givenName}}",
+          "familyName": "{{familyName}}"
+        },
+        "emails": [
+          {
+            "type": "work",
+            "value": "{{email}}"
+          }
+        ],
+        "active": true,
+        "urn:ietf:params:scim:schemas:extension:ibm:2.0:User": {
+          "realm": "cloudIdentityRealm",
+          "userCategory": "regular"
+        }
+      },
+      "notes": "realm=cloudIdentityRealm = Cloud Directory. userCategory=regular. Password opcional (NO incluido; para login el usuario/flujo lo setea aparte). Respuesta 201, id en data.id."
+    },
+    "create-attribute": {
+      "verified": true,
+      "status": 201,
+      "method": "POST",
+      "path": "/v1.0/attributes",
+      "headers": {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      "body": {
+        "name": "{{attrName}}",
+        "description": "{{description}}",
+        "scope": "global",
+        "sourceType": "static",
+        "datatype": "string",
+        "value": "{{value}}",
+        "displayName": "{{displayName}}",
+        "tags": [
+          "isv-dsl"
+        ]
+      },
+      "notes": "sourceType=static EXIGE 'value' (falta -> 400 CSIBE2717E). Para atributo rule-based/leido-de-fuente usar sourceType=credential(credName) o schema(schemaAttribute); esos requieren mapeo adicional via el wizard UI (ver reference ibm-verify-admin.md). Respuesta 201, id (uuid) en data.id."
+    },
+    "assign-group-member": {
+      "verified": true,
+      "status": 204,
+      "method": "PATCH",
+      "path": "/v2.0/Groups/{{groupId}}",
+      "headers": {
+        "Content-Type": "application/scim+json",
+        "Accept": "application/scim+json"
+      },
+      "body": {
+        "schemas": [
+          "urn:ietf:params:scim:api:messages:2.0:PatchOp"
+        ],
+        "Operations": [
+          {
+            "op": "add",
+            "path": "members",
+            "value": [
+              {
+                "value": "{{userId}}",
+                "type": "user"
+              }
+            ]
+          }
+        ]
+      },
+      "notes": "Asigna un usuario a un grupo (membresia = entitlement de provisioning). 'type' OBLIGATORIO y DEBE ser 'user' o 'group' (otros->400 CSIAI0097E; falta->400 CSIAI0093E). Exito = 204 SIN body (ok=false en V.api por no-json, pero es correcto: verificar con GET /v2.0/Groups/{id}). op:'remove' para desasignar."
+    },
+    "assign-app-entitlement": {
+      "verified": false,
+      "method": "UI/API",
+      "path": "/ui/admin/application/{appId} (tab Entitlements)  |  POST /v1.0/entitlements/search para leer roles de app",
+      "notes": "Dar ACCESO A UNA APP (distinto de membresia de grupo) se gestiona en la pestana Entitlements de la app: 'Automatic access for all users and groups' o 'Select users and groups...'. La API de escritura de app-entitlements NO esta verificada aun (requiere mapeo del wizard UI). Para provisioning tipico basta assign-group-member + politicas de acceso que referencian el grupo."
+    },
+    "add-oidc-idp": {
+      "verified": true,
+      "status": 201,
+      "method": "POST",
+      "path": "/v2.0/identitysources",
+      "headers": {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      "body": {
+        "instanceName": "{{idpName}}",
+        "enabled": false,
+        "sourceTypeId": 19,
+        "properties": [
+          {
+            "key": "realm",
+            "value": "{{issuerUrl}}"
+          },
+          {
+            "key": "friendly_name",
+            "value": "{{friendlyName}}"
+          },
+          {
+            "key": "client_id",
+            "value": "{{clientId}}"
+          },
+          {
+            "key": "client_secret",
+            "value": "{{clientSecret}}"
+          },
+          {
+            "key": "scopes",
+            "value": "openid profile"
+          },
+          {
+            "key": "principalAttribute",
+            "value": "sub"
+          },
+          {
+            "key": "claimsSource",
+            "value": "userInfo"
+          },
+          {
+            "key": "supported_grant_types",
+            "value": "authorization_code"
+          },
+          {
+            "key": "token_endpoint_auth_method",
+            "value": "client_secret_post"
+          },
+          {
+            "key": "pkce_support",
+            "value": "false"
+          },
+          {
+            "key": "jitEnabled",
+            "value": "true"
+          },
+          {
+            "key": "identityLinkingEnabled",
+            "value": "false"
+          },
+          {
+            "key": "forward_login_hint",
+            "value": "false"
+          },
+          {
+            "key": "forward_max_age",
+            "value": "false"
+          },
+          {
+            "key": "forward_prompt",
+            "value": "false"
+          },
+          {
+            "key": "wellknown_endpoint",
+            "value": "{{wellknownEndpoint}}"
+          },
+          {
+            "key": "authorization_endpoint",
+            "value": "{{authorizationEndpoint}}"
+          },
+          {
+            "key": "token_endpoint",
+            "value": "{{tokenEndpoint}}"
+          },
+          {
+            "key": "userinfo_endpoint",
+            "value": "{{userinfoEndpoint}}"
+          },
+          {
+            "key": "jwks_uri",
+            "value": "{{jwksUri}}"
+          }
+        ]
+      },
+      "notes": "OIDC Enterprise = sourceTypeId 19. Props OBLIGATORIAS (falta->400 CSIAG0705E): supported_grant_types, forward_max_age, forward_login_hint, forward_prompt, realm, pkce_support, client_secret, scopes, client_id. friendly_name NO admite espacios (->400 CSIAG0625E). client_secret = SECRETO (en n8n inyectar por credencial, NO hardcodear). enabled:false recomendado hasta validar. Respuesta 201, id (uuid) en data.id (o GET /v2.0/identitysources para releer). Props completas opcionales en catalogo (ver WordPress OIDC)."
+    },
+    "add-oidc-app": {
+      "verified": true,
+      "status": 201,
+      "method": "POST",
+      "path": "/v1.0/applications",
+      "headers": {
+        "Content-Type": "application/json",
+        "Accept": "application/json"
+      },
+      "body": {
+        "name": "{{appName}}",
+        "templateId": "998",
+        "type": "OpenID Connect",
+        "description": "{{description}}",
+        "applicationState": true,
+        "signonState": true,
+        "visibleOnLaunchpad": false,
+        "approvalRequired": false,
+        "providers": {
+          "oidc": {
+            "applicationUrl": "{{applicationUrl}}",
+            "properties": {
+              "grantTypes": {
+                "authorizationCode": "true",
+                "implicit": "false",
+                "ropc": "false",
+                "clientCredentials": "false"
+              },
+              "redirectUris": [
+                "{{redirectUri}}"
+              ],
+              "idTokenSigningAlg": "RS256",
+              "accessTokenExpiry": 3600,
+              "doNotGenerateClientSecret": "false",
+              "generateRefreshToken": "false",
+              "consentType": "dpcm"
+            }
+          }
+        }
+      },
+      "notes": "OIDC app = templateId 998, type 'OpenID Connect'. clientId y clientSecret se AUTOGENERAN en el save (no enviarlos). Leer el clientId/secret despues con GET /v1.0/applications/{id} (secret solo via UI copy o endpoint protegido). Respuesta 201, id = ultimo segmento de _links.self.href. grantTypes como strings 'true'/'false'."
+    }
+  },
+  "createdResources": {
+    "comment": "Recursos ADITIVOS creados en FASE-2 (prefijo isv-dsl-). Fabian puede borrarlos con los ids/paths de abajo.",
+    "group": {
+      "displayName": "isv-dsl-group",
+      "id": "8A500033P2",
+      "delete": "DELETE /v2.0/Groups/8A500033P2"
+    },
+    "user": {
+      "userName": "isv-dsl-user",
+      "id": "8A40002O72",
+      "delete": "DELETE /v2.0/Users/8A40002O72"
+    },
+    "attribute": {
+      "name": "isvDslAttr",
+      "id": "98800b6f-a641-4624-a650-9d6c9793fdd3",
+      "delete": "DELETE /v1.0/attributes/98800b6f-a641-4624-a650-9d6c9793fdd3"
+    },
+    "membership": {
+      "desc": "isv-dsl-user agregado a isv-dsl-group",
+      "undo": "PATCH /v2.0/Groups/8A500033P2 Operations op:remove members (o se elimina al borrar el grupo)"
+    },
+    "oidcApp": {
+      "name": "isv-dsl-oidc-app",
+      "id": "1575943302248883312",
+      "delete": "DELETE /v1.0/applications/1575943302248883312"
+    },
+    "oidcIdp": {
+      "name": "isv-dsl-oidc-idp",
+      "id": "e4071a86-996f-4157-a5ec-31cb6f527f8c",
+      "delete": "DELETE /v2.0/identitysources/e4071a86-996f-4157-a5ec-31cb6f527f8c",
+      "note": "creado enabled:false con secreto dummy no-real"
+    },
+    "ropcApp": {
+      "name": "isv-dsl-ropc-app",
+      "id": "1579639468872810874",
+      "clientId": "83ad30d2-2ec1-4cf3-bd87-adbaf6554634",
+      "delete": "DELETE /v1.0/applications/1579639468872810874",
+      "note": "grantTypes.ropc=true; client_secret en ~/.isv-ropc.env (NO en repo/canal)"
+    },
+    "ropcUser": {
+      "name": "isv-dsl-ropc-user",
+      "id": "8A40002OAR",
+      "delete": "DELETE /v2.0/Users/8A40002OAR",
+      "note": "con password (en ~/.isv-ropc.env); pwdReset=true forzado por policy"
+    },
+    "ropcUser2": {
+      "name": "isv-dsl-ropc-user2",
+      "id": "8A40002OB0",
+      "delete": "DELETE /v2.0/Users/8A40002OB0",
+      "note": "idem; pwdReset=true aunque se envió false en create (server lo ignora)"
+    }
+  },
+  "ropcFindings": {
+    "tokenEndpoint": "POST /oauth2/token",
+    "grantPasswordSupported": true,
+    "ropcAppConfig": "add-oidc-app con providers.oidc.properties.grantTypes.ropc='true'",
+    "createUserWithPassword": "POST /v2.0/Users con campo top-level 'password' (string) -> 201 OK",
+    "ropcRequest": "application/x-www-form-urlencoded: grant_type=password, client_id, client_secret, username (userName PLANO, sin @realm), password, scope=openid",
+    "BLOCKER": "Cloud Directory fuerza cambio de password en primer login: pwdReset=true es server-controlled (ignora el valor en create y rechaza PATCH CSIAI0174E). ROPC devuelve 400 invalid_grant CSIAQ0267E 'The password must be changed'. Credenciales SÍ matchean (prueba: username plano da ese error; username@realm da CSIAQ0264E invalid).",
+    "opcionesParaDesbloquear": [
+      "(a) Fabián relaja el password policy de Cloud Directory: quitar 'requerir cambio de contraseña en primer inicio/para cuentas nuevas' (cambio de tenant, afecta a todas las cuentas nuevas).",
+      "(b) La simulación hace un paso único de cambio de password por usuario (flujo change-password ISV) para limpiar pwdReset antes del login masivo.",
+      "(c) Usar el carril web-authcode (simulate-logins-web.mjs) que maneja la pantalla de cambio de password de forma interactiva."
+    ],
+    "caveatMFA": "Si el access policy fuerza MFA, ROPC falla igual -> usar grant policyauth o carril web.",
+    "opcionB_NO_FACTIBLE_VIA_ADMIN": "PROBADO: limpiar pwdReset como ADMIN no se puede. PATCH replace 'password' -> 204 OK pero pwdReset SIGUE true. PATCH del flag extension pwdReset -> rechazado (CSIAI0174E / CSIAI0097E path invalido). /v2.0/Me/password es solo self (cambia al admin, no a otro usuario). Solo el PROPIO usuario puede limpiarlo cambiando su pass (old->new) con SU token, que ROPC no puede emitir mientras pwdReset=true (chicken-and-egg). => NO insertar nodo 'clear pwdReset' en n8n; no hay endpoint admin que funcione.",
+    "recomendacion": "Opcion (a) es la via limpia para el bulk: Fabian desactiva en el password policy de Cloud Directory el 'cambio obligatorio en primer login / para cuentas nuevas'. Con eso los usuarios SCIM nuevos nacen pwdReset=false y las plantillas create-user + ROPC funcionan para el masivo SIN nodo extra. Alternativa (c) carril web-authcode. Ubicacion UI del toggle: consola admin, ajustes de contrasena de Cloud Directory (Authentication/seguridad de contrasena)."
+  },
+  "accessCertCampaign": {
+    "verifiedAt": "2026-11-01T22:51:13.500Z",
+    "by": "Pike-W1",
+    "source": "RE del MFE access-certification-ui chunk 701 (Ht() builder) + apply 201 live",
+    "endpoint": "POST /cm/v2.0/campaigns",
+    "note": "CAMPAIGNS=\"campaigns\". type enum lowercase: userassignment|groupassignment|account|groupmembership. /cm/v2.0/instances es GET-only (runs), NO crea. Scope de grupos -> userFilter.userInclusionList=[{aGroup:true,id,name}]. reviewer=Vt(user) shape {aGroup:false,id,name:userName,email,givenName,familyName,formatted}.",
+    "enums": {
+      "type": {
+        "USER_ASSIGNMENT": "userassignment",
+        "GROUP_ASSIGNMENT": "groupassignment",
+        "ACCOUNT": "account",
+        "GROUP_MEMBERSHIP": "groupmembership"
+      },
+      "reviewerType": {
+        "SELF": "self",
+        "SPECIFIC_USER": "specific",
+        "USER_MANAGER": "usermanager",
+        "USER_MANAGER_APPLICATION_OWNER": "userapplicationowner"
+      },
+      "priority": {
+        "HIGH": "high",
+        "MEDIUM": "medium",
+        "LOW": "low"
+      },
+      "signOff": {
+        "EOC": "eoc",
+        "MANUAL": "manual",
+        "NO_SIGNOFF": "no_signoff"
+      },
+      "overdueAction": {
+        "NO_ACTION": "doNothing",
+        "REVOKE": "REVOKE"
+      },
+      "mitigation": {
+        "SEND_REMINDER": "reminder",
+        "NO_REMINDER": "none"
+      },
+      "inclusion": {
+        "INCLUDE": "include",
+        "EXCLUDE": "exclude"
+      }
+    },
+    "bodyTemplate": {
+      "applications": [],
+      "description": "<string>",
+      "launchDate": "<number ms timestamp>",
+      "name": "<string>",
+      "priority": "medium",
+      "reviewerOverwritten": true,
+      "runNow": false,
+      "signOff": "eoc",
+      "type": "groupmembership",
+      "duration": "<durationDays * 86400000>",
+      "overdueAction": "doNothing",
+      "reviewer": {
+        "aGroup": false,
+        "id": "<userId>",
+        "name": "<userName>",
+        "email": "<email>",
+        "givenName": "<>",
+        "familyName": "<>",
+        "formatted": "<>"
+      },
+      "reviewerType": "specific",
+      "allowSupervisorEscalation": false,
+      "userFilter": {
+        "userInclusionList": [
+          {
+            "aGroup": true,
+            "id": "<groupId>",
+            "name": "<groupName>"
+          }
+        ]
+      },
+      "frequency": {
+        "cronString": "0 12 <dayOfMonth> */12 *"
+      }
+    },
+    "liveResult": {
+      "status": 201,
+      "campaignId": "814cbe7d-27b9-4726-b00d-9d666a29f757",
+      "name": "Demo ACME — Access certification grupos",
+      "verifiedCount": 1
+    }
+  }
+}

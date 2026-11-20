@@ -1,0 +1,1 @@
+{"name":"pike-web","version":"1.0.0","type":"module","private":true,"dependencies":{"playwright-core":"^1.64.1","pptxgenjs":"^4.0.1"}}
