@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// FASE-2 (Pike-ISV-V): crea recursos representativos ADITIVOS prefijo isv-dsl- via token admin.
+// FASE-2 (pike-web): crea recursos representativos ADITIVOS prefijo isv-dsl- via token admin.
 // Guarda el request EXACTO (method/path/body/schemas) + respuesta (id/status) como plantillas DSL.
 // NUNCA persiste secretos (password redactado en la plantilla guardada).
 import { chromium } from 'playwright-core';
@@ -64,7 +64,7 @@ const created = {
 
 // Save DSL templates (request shapes, parameterized) — redact any secret-ish field
 const templates = {
-  generatedAt: new Date().toISOString(), by:'Pike-ISV-V', tenant: new URL(page.url()).host,
+  generatedAt: new Date().toISOString(), by:'pike-web', tenant: new URL(page.url()).host,
   note:'Plantillas de ops Verify verificadas via token admin. {{param}} = sustituir. Bodies sin secretos.',
   ops: {
     'create-group': { method:'POST', path:'/v2.0/Groups', headers:{'Content-Type':'application/scim+json'},

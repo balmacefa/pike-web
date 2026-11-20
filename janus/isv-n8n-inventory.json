@@ -1,5 +1,5 @@
 {
-  "generatedBy": "Pike-ISV-N",
+  "generatedBy": "pike-web",
   "phase": "FASE-2 MAP+TEMPLATES",
   "n8n": {
     "workflows": [
@@ -78,19 +78,19 @@
       "status": "RECONCILED: body create-user alineado (2 schemas + realm cloudIdentityRealm)"
     }
   ],
-  "validation": "5/5 plantillas valid=true, 0 errores, 0 warnings (post-reconciliacion con isv-dsl-templates.json de Pike-ISV-V)",
+  "validation": "5/5 plantillas valid=true, 0 errores, 0 warnings (post-reconciliacion con isv-dsl-templates.json de pike-web)",
   "reconciliation": "TODAS reconciliadas con bodies verificados de V: create-group 1:1; create-user/bulk-provision (201, 2 schemas+realm); add-attribute (201, static+value); assign-entitlement (204, assign-group-member con type=user). App-level entitlement NO mapeado (requiere UI).",
   "note_app_entitlement": "Dar acceso a una APP != membresia de grupo; se hace en pestana Entitlements de la app (UI), API de escritura no mapeada. Para provisioning estandar basta assign-group-member + politicas que referencian el grupo.",
   "note_204": "assign-entitlement devuelve 204 sin body; el nodo HTTP Request de n8n lo acepta OK. Validar efecto con GET /v2.0/Groups/{id}.",
   "simulateLogins": {
     "id": "in93aKOtq3cAR1R5", "name": "ISV-TPL: simulate-logins", "active": false,
-    "purpose": "Simular login masivo via ROPC (envuelve simulate-logins-ropc.mjs de Pike-ISV-D)",
+    "purpose": "Simular login masivo via ROPC (envuelve simulate-logins-ropc.mjs de pike-web)",
     "verifyCall": "POST /oauth2/token grant_type=password (OIDC token endpoint)",
     "flow": "Trigger -> Build Users (Code: [{username,password}]) -> Loop Over Logins (SplitInBatches batch=5) -> ROPC Login (onError=continueRegularOutput, neverError) -> Tally Result (ok/status) -> loop",
     "credential": "UDOahacpStSXHeZh (httpCustomAuth, client_id/secret ROPC)",
     "params": ["users[] en nodo Build Users (username+password)", "batchSize en Loop Over Logins (throttle)"],
-    "dependencies": "Pike-ISV-V debe: (1) crear app OIDC con ropc:true via add-oidc-app y entregar client_id/secret -> pegar en credencial UDOahacpStSXHeZh; (2) provisionar usuarios con password conocido. Fabian: definir objetivo+escala. Si politica fuerza MFA, ROPC falla -> usar carril web-authcode.",
-    "status": "PRE-CONSTRUIDO inactivo, validado 0err/0warn. Opcional (paso 2 del plan de D), a la espera de priorizacion de Pike-ISV-0."
+    "dependencies": "pike-web debe: (1) crear app OIDC con ropc:true via add-oidc-app y entregar client_id/secret -> pegar en credencial UDOahacpStSXHeZh; (2) provisionar usuarios con password conocido. Fabian: definir objetivo+escala. Si politica fuerza MFA, ROPC falla -> usar carril web-authcode.",
+    "status": "PRE-CONSTRUIDO inactivo, validado 0err/0warn. Opcional (paso 2 del plan de D), a la espera de priorizacion de pike-web."
   },
   "all_reconciled": true,
   "coverage": "100% - 7 plantillas ISV-TPL (create-group, create-user, add-attribute, assign-entitlement, bulk-provision, add-oidc-idp, add-oidc-app). Catalogo DSL cubre provisioning SCIM core + membresias + bulk + federacion OIDC + apps OIDC.",

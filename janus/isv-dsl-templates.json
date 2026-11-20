@@ -1,6 +1,6 @@
 {
   "generatedAt": "2026-11-01",
-  "by": "Pike-ISV-V",
+  "by": "pike-web",
   "tenant": "YOUR-TENANT.verify.ibm.com",
   "note": "Plantillas de ops IBM Verify VERIFICADAS via token de sesion admin (no requieren API client). {{param}} = sustituir. Bodies sin secretos. Auth = header Authorization del token admin (en n8n: Bearer del client_credentials).",
   "ops": {

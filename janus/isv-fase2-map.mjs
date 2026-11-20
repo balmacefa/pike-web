@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// FASE-2 (Pike-ISV-V): mapeo exhaustivo read-only del tenant IBM Verify via token de sesion admin.
+// FASE-2 (pike-web): mapeo exhaustivo read-only del tenant IBM Verify via token de sesion admin.
 // Vuelca un catalogo canonico a janus/isv-catalog.json. NUNCA persiste tokens ni secretos (se redactan).
 import { chromium } from 'playwright-core';
 import { readFileSync, writeFileSync } from 'node:fs';
@@ -67,7 +67,7 @@ const raw = await page.evaluate(async (endpoints)=>{
 }, ENDPOINTS);
 
 // Build canonical catalog (redacted + summarized)
-const cat = { tenant: new URL(page.url()).host, generatedAt: new Date().toISOString(), by:'Pike-ISV-V', endpoints:{} };
+const cat = { tenant: new URL(page.url()).host, generatedAt: new Date().toISOString(), by:'pike-web', endpoints:{} };
 for (const [label, res] of Object.entries(raw)){
   cat.endpoints[label] = { status: res.status, ok: res.ok, data: redact(res.data) };
 }
