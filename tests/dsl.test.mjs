@@ -41,3 +41,15 @@ test("validation: unterminated string throws", () => {
 test("validation: --strict rejects unknown verb", () => {
   assert.throws(() => compile(`recipe r\n  on text "a"\n    frobnicate "x"`, { strict: true }), /unknown verb/);
 });
+
+import { emitCompact, emitPacked } from "../core/dsl.mjs";
+const BOOK = () => compile(readFileSync(resolve(HERE, "../core/recipes.pweb"), "utf8")).recipes;
+
+test("compact codec: round-trip all recipes", () => {
+  const b = BOOK(); const back = compile(emitCompact({ recipes: b })).recipes;
+  for (const k of Object.keys(b)) eq(b[k], back[k], k);
+});
+test("packed codec (dict): round-trip all recipes", () => {
+  const b = BOOK(); const back = compile(emitPacked({ recipes: b })).recipes;
+  for (const k of Object.keys(b)) eq(b[k], back[k], k);
+});

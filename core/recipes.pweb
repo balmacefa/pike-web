@@ -2,7 +2,7 @@
 
 recipe wp-ibm
   desc Login SSO IBM Verify -> WordPress wp-admin (self-healing via IBMid -> Google)
-  domains YOUR-TENANT.verify.ibm.com, login.ibm.com, wordpress-cq8frf4wsxluhjf7qezakz1k.balmacefa.com
+  domains YOUR-TENANT.verify.ibm.com, login.ibm.com, YOUR-WP.example.com
   start https://YOUR-TENANT.verify.ibm.com/usc
   goal url /wp-admin
   user sel #wp-admin-bar-my-account .display-name, #wpadminbar .display-name
@@ -219,3 +219,22 @@ recipe runpod-login
   on text "Choose an account|demo-user"
     clickText "demo-user"
     waitText "Hello," 15000
+
+recipe gh-new-issue
+  desc Open a GitHub repo and start a new issue (DSL smoke recipe)
+  domains github.com
+  start https://github.com/balmacefa/pike-web
+  goal url /issues/new
+  user sel .AppHeader-user img, .avatar
+
+  on text "Issues"
+    clickText "Issues"
+    waitText "New issue" 10000
+
+  on text "New issue"
+    clickText "New issue"
+    waitSel "#issue_title"
+
+  on url "/issues/new"
+    click "#issue_title"
+    type "#issue_title" "Tracking: recipe DSL smoke"

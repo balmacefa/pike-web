@@ -1,21 +1,8 @@
 {
-  "_doc": "Recetario de Pike (memoria + scripting genérico). Cada receta es DATA interpretada por engine.mjs. Pike lo espeja a memoria L2 (durable, cross-sesión). Los sitios nuevos se aprenden solos y se agregan aquí.",
+  "_doc": "Compiled from recipes.pweb DSL. DATA interpreted by engine.mjs.",
   "recipes": {
     "wp-ibm": {
       "name": "wp-ibm",
-      "desc": "Login SSO IBM Verify -> WordPress wp-admin (self-healing via IBMid -> Google)",
-      "domains": [
-        "YOUR-TENANT.verify.ibm.com",
-        "login.ibm.com",
-        "wordpress-cq8frf4wsxluhjf7qezakz1k.balmacefa.com"
-      ],
-      "start": "https://YOUR-TENANT.verify.ibm.com/usc",
-      "goal": {
-        "urlMatch": "/wp-admin"
-      },
-      "user": {
-        "selector": "#wp-admin-bar-my-account .display-name, #wpadminbar .display-name"
-      },
       "steps": [
         {
           "at": {
@@ -85,16 +72,23 @@
             ]
           ]
         }
-      ]
+      ],
+      "desc": "Login SSO IBM Verify -> WordPress wp-admin (self-healing via IBMid -> Google)",
+      "domains": [
+        "YOUR-TENANT.verify.ibm.com",
+        "login.ibm.com",
+        "YOUR-WP.example.com"
+      ],
+      "start": "https://YOUR-TENANT.verify.ibm.com/usc",
+      "goal": {
+        "urlMatch": "/wp-admin"
+      },
+      "user": {
+        "selector": "#wp-admin-bar-my-account .display-name, #wpadminbar .display-name"
+      }
     },
     "intencion-fabian": {
       "name": "intencion-fabian",
-      "_recorded": "2026-11-01T05:38:07.119Z",
-      "_draft": true,
-      "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/attributes",
-      "goal": {
-        "urlMatch": "/ui/admin/applications/sts-clients"
-      },
       "steps": [
         {
           "at": {
@@ -213,19 +207,16 @@
             ]
           ]
         }
-      ]
+      ],
+      "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/attributes",
+      "goal": {
+        "urlMatch": "/ui/admin/applications/sts-clients"
+      },
+      "_recorded": "2026-11-01T05:38:07.119Z",
+      "_draft": true
     },
     "isv-create-group": {
       "name": "isv-create-group",
-      "desc": "Crea un grupo via UI (Users>Groups>Add group). Vars: groupName, groupDesc. API-first: SCIM POST /v2.0/Groups.",
-      "_verified": "ref-ibm-verify-admin.md Create group (tested e2e)",
-      "domains": [
-        "YOUR-TENANT.verify.ibm.com"
-      ],
-      "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/users",
-      "goal": {
-        "textMatch": "was created|group created|successfully|added"
-      },
       "steps": [
         {
           "at": {
@@ -263,19 +254,19 @@
             ]
           ]
         }
-      ]
-    },
-    "isv-add-user": {
-      "name": "isv-add-user",
-      "desc": "Alta de usuario via UI (Users>Add user). Vars: idp(dropdown), givenName, surname, userName, email. API-first: SCIM POST /v2.0/Users.",
-      "_verified": "ref-ibm-verify-admin.md Add user",
+      ],
+      "desc": "Crea un grupo via UI (Users>Groups>Add group). Vars: groupName, groupDesc. API-first: SCIM POST /v2.0/Groups.",
       "domains": [
         "YOUR-TENANT.verify.ibm.com"
       ],
       "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/users",
       "goal": {
-        "textMatch": "was created|user created|successfully|added"
+        "textMatch": "was created|group created|successfully|added"
       },
+      "_verified": "ref-ibm-verify-admin.md Create group (tested e2e)"
+    },
+    "isv-add-user": {
+      "name": "isv-add-user",
       "steps": [
         {
           "at": {
@@ -332,19 +323,19 @@
             ]
           ]
         }
-      ]
-    },
-    "isv-add-attribute": {
-      "name": "isv-add-attribute",
-      "desc": "Crea atributo custom (4 pasos). Vars: attrName, attrId(solo letras/digitos), attrDesc, attrIdentifier. No hay API verificada de escritura; GET /v1.0/attributes para leer.",
-      "_verified": "ref-ibm-verify-admin.md Add attribute (tested)",
+      ],
+      "desc": "Alta de usuario via UI (Users>Add user). Vars: idp(dropdown), givenName, surname, userName, email. API-first: SCIM POST /v2.0/Users.",
       "domains": [
         "YOUR-TENANT.verify.ibm.com"
       ],
-      "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/attributes",
+      "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/users",
       "goal": {
-        "textMatch": "was created|attribute created|successfully|added"
+        "textMatch": "was created|user created|successfully|added"
       },
+      "_verified": "ref-ibm-verify-admin.md Add user"
+    },
+    "isv-add-attribute": {
+      "name": "isv-add-attribute",
       "steps": [
         {
           "at": {
@@ -416,19 +407,19 @@
             ]
           ]
         }
-      ]
-    },
-    "isv-add-oidc-idp": {
-      "name": "isv-add-oidc-idp",
-      "desc": "Federa un IdP OIDC Enterprise (tearsheet 6 pasos). Vars: idpName, idpRealm(issuer), friendlyName, clientId, wellknown. Secret lo pega el usuario. Redirect a dar al IdP: https://<tenant>/auth/redirect.",
-      "_verified": "ref-ibm-verify-admin.md Add identity provider OIDC Enterprise (tested 2026-10-31)",
+      ],
+      "desc": "Crea atributo custom (4 pasos). Vars: attrName, attrId(solo letras/digitos), attrDesc, attrIdentifier. No hay API verificada de escritura; GET /v1.0/attributes para leer.",
       "domains": [
         "YOUR-TENANT.verify.ibm.com"
       ],
-      "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/identity-providers",
+      "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/attributes",
       "goal": {
-        "textMatch": "was created|identity provider|successfully|added"
+        "textMatch": "was created|attribute created|successfully|added"
       },
+      "_verified": "ref-ibm-verify-admin.md Add attribute (tested)"
+    },
+    "isv-add-oidc-idp": {
+      "name": "isv-add-oidc-idp",
       "steps": [
         {
           "at": {
@@ -518,19 +509,19 @@
             ]
           ]
         }
-      ]
-    },
-    "isv-add-oidc-app": {
-      "name": "isv-add-oidc-app",
-      "desc": "Crea aplicacion OpenID Connect. Vars: appName, companyName, appUrl, redirectUri. client_id/secret se generan al guardar. API-first lectura: GET /v1.0/applications.",
-      "_verified": "ref-ibm-verify-admin.md Add an application + OIDC app General/Sign-on (tested 2026-10-31)",
+      ],
+      "desc": "Federa un IdP OIDC Enterprise (tearsheet 6 pasos). Vars: idpName, idpRealm(issuer), friendlyName, clientId, wellknown. Secret lo pega el usuario. Redirect a dar al IdP: https://<tenant>/auth/redirect.",
       "domains": [
         "YOUR-TENANT.verify.ibm.com"
       ],
-      "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/applications/applications",
+      "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/identity-providers",
       "goal": {
-        "textMatch": "application was|was updated|was created|successfully"
+        "textMatch": "was created|identity provider|successfully|added"
       },
+      "_verified": "ref-ibm-verify-admin.md Add identity provider OIDC Enterprise (tested 2026-10-31)"
+    },
+    "isv-add-oidc-app": {
+      "name": "isv-add-oidc-app",
       "steps": [
         {
           "at": {
@@ -594,19 +585,19 @@
             ]
           ]
         }
-      ]
-    },
-    "isv-assign-entitlement": {
-      "name": "isv-assign-entitlement",
-      "desc": "Asigna acceso (entitlement) a una app via tab Entitlements. Vars: appName, grantee. Flujo: abrir app, tab Entitlements, Automatic access (todos) o Select users/groups. API lectura: POST /v1.0/entitlements/search.",
-      "_verified": "ref-ibm-verify-admin.md App Entitlements tab",
+      ],
+      "desc": "Crea aplicacion OpenID Connect. Vars: appName, companyName, appUrl, redirectUri. client_id/secret se generan al guardar. API-first lectura: GET /v1.0/applications.",
       "domains": [
         "YOUR-TENANT.verify.ibm.com"
       ],
       "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/applications/applications",
       "goal": {
-        "textMatch": "was updated|access|workflow|successfully"
+        "textMatch": "application was|was updated|was created|successfully"
       },
+      "_verified": "ref-ibm-verify-admin.md Add an application + OIDC app General/Sign-on (tested 2026-10-31)"
+    },
+    "isv-assign-entitlement": {
+      "name": "isv-assign-entitlement",
       "steps": [
         {
           "at": {
@@ -643,16 +634,19 @@
             ]
           ]
         }
-      ]
+      ],
+      "desc": "Asigna acceso (entitlement) a una app via tab Entitlements. Vars: appName, grantee. Flujo: abrir app, tab Entitlements, Automatic access (todos) o Select users/groups. API lectura: POST /v1.0/entitlements/search.",
+      "domains": [
+        "YOUR-TENANT.verify.ibm.com"
+      ],
+      "start": "https://YOUR-TENANT.verify.ibm.com/ui/admin/applications/applications",
+      "goal": {
+        "textMatch": "was updated|access|workflow|successfully"
+      },
+      "_verified": "ref-ibm-verify-admin.md App Entitlements tab"
     },
     "lagar-flujo": {
       "name": "lagar-flujo",
-      "_recorded": "2026-11-03T04:10:34.316Z",
-      "_draft": true,
-      "start": "https://www.ellagar.com/",
-      "goal": {
-        "urlMatch": "/ECOMMERCE/DetalleArticulo/7054067/cepillo-acero-con-mango-4-lineas--pro"
-      },
       "steps": [
         {
           "at": {
@@ -696,23 +690,16 @@
             ]
           ]
         }
-      ]
+      ],
+      "start": "https://www.ellagar.com/",
+      "goal": {
+        "urlMatch": "/ECOMMERCE/DetalleArticulo/7054067/cepillo-acero-con-mango-4-lineas--pro"
+      },
+      "_recorded": "2026-11-03T04:10:34.316Z",
+      "_draft": true
     },
     "runpod-login": {
       "name": "runpod-login",
-      "desc": "Login Google SSO -> console.runpod.io dashboard",
-      "domains": [
-        "console.runpod.io",
-        "accounts.google.com"
-      ],
-      "start": "https://console.runpod.io/",
-      "goal": {
-        "urlMatch": "console.runpod.io/$|console.runpod.io/?|/pods|/serverless"
-      },
-      "user": {
-        "textMatch": "Hello,"
-      },
-      "auth": "google-sso",
       "steps": [
         {
           "at": {
@@ -746,7 +733,83 @@
           ]
         }
       ],
+      "desc": "Login Google SSO -> console.runpod.io dashboard",
+      "domains": [
+        "console.runpod.io",
+        "accounts.google.com"
+      ],
+      "start": "https://console.runpod.io/",
+      "goal": {
+        "urlMatch": "console.runpod.io/$|console.runpod.io/?|/pods|/serverless"
+      },
+      "user": {
+        "textMatch": "Hello,"
+      },
+      "auth": "google-sso",
       "note": "Sesion normalmente persiste en el perfil chrome_pike_debug; el recorder puede refinar los selectores de Google si cambian."
+    },
+    "gh-new-issue": {
+      "name": "gh-new-issue",
+      "steps": [
+        {
+          "at": {
+            "textMatch": "Issues"
+          },
+          "do": [
+            [
+              "clickText",
+              "Issues"
+            ],
+            [
+              "waitText",
+              "New issue",
+              10000
+            ]
+          ]
+        },
+        {
+          "at": {
+            "textMatch": "New issue"
+          },
+          "do": [
+            [
+              "clickText",
+              "New issue"
+            ],
+            [
+              "waitSel",
+              "#issue_title"
+            ]
+          ]
+        },
+        {
+          "at": {
+            "urlMatch": "/issues/new"
+          },
+          "do": [
+            [
+              "click",
+              "#issue_title"
+            ],
+            [
+              "type",
+              "#issue_title",
+              "Tracking: recipe DSL smoke"
+            ]
+          ]
+        }
+      ],
+      "desc": "Open a GitHub repo and start a new issue (DSL smoke recipe)",
+      "domains": [
+        "github.com"
+      ],
+      "start": "https://github.com/balmacefa/pike-web",
+      "goal": {
+        "urlMatch": "/issues/new"
+      },
+      "user": {
+        "selector": ".AppHeader-user img, .avatar"
+      }
     }
   }
 }
