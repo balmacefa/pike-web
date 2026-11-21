@@ -215,10 +215,10 @@ End-user portal `/usc`: header `#ovd--cloud-header__app-menu`, `#usc--header-act
 - **Detect UI drift**: for each `NAV` key, `await V.go(k); V.page()` and compare with this file; update the selectors here.
 
 ## Known tenant state
-- Identity provider `WordPress OIDC` (OIDC Enterprise, id fc0da5e0-c186-40f0-b0bd-6d88009c9301, issuer `https://wordpress-cq8frf4wsxluhjf7qezakz1k.balmacefa.com/`, client `isv-demo-client`, client_secret_post, PKCE off, JIT on, unique id `sub`, map name→display_name). Works end-to-end.
+- Identity provider `WordPress OIDC` (OIDC Enterprise, id fc0da5e0-c186-40f0-b0bd-6d88009c9301, issuer `https://your-wp.example.com/`, client `isv-demo-client`, client_secret_post, PKCE off, JIT on, unique id `sub`, map name→display_name). Works end-to-end.
 - App `OIDC debugger` (id 1456302950516373810, templateId 998, OpenID Connect; formerly "WordPress SSO test", client id cfe06067-14e6-4427-be8a-715bcef4c981) — only IdP WordPress OIDC, automatic access for all; redirects to oidcdebugger.com.
-- App `WordPress Admin` (id 1509447995874816150, client id 9f819345-1257-4f20-a59f-646e60e608ce) — Verify as IdP for wp-admin; redirect `https://wordpress-cq8frf4wsxluhjf7qezakz1k.balmacefa.com/wp-admin/admin-ajax.php?action=openid-connect-authorize`; IdPs IBMid + Cloud Directory; PKCE off; access only Fabián (IBMid user `demo-user@example.com`). Works (logs in as WP admin `fabian`). Details in skill wp-oidc-coolify-demo.
-- JIT user `isv@https://wordpress-cq8frf4wsxluhjf7qezakz1k.balmacefa.com/` (created by the WordPress OIDC test).
+- App `WordPress Admin` (id 1509447995874816150, client id 9f819345-1257-4f20-a59f-646e60e608ce) — Verify as IdP for wp-admin; redirect `https://your-wp.example.com/wp-admin/admin-ajax.php?action=openid-connect-authorize`; IdPs IBMid + Cloud Directory; PKCE off; access restricted to the demo admin (IBMid user `demo-user@example.com`). Works (logs in as the WP admin `demo-admin`). Details in skill wp-oidc-coolify-demo.
+- JIT user `isv@https://your-wp.example.com/` (created by the WordPress OIDC test).
 - Test objects (user deletes them): groups `claude-test-ui` (id 8A5000317Z) and `claude-test-api` (id 8A50003182); custom attribute `claude_test_attr` (identifier `claudeTestAttr`, id 648d2d65-0092-43be-809a-2793c4588bd5).
 
 ## Pendientes (2026-10-31)

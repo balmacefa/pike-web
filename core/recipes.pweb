@@ -2,8 +2,8 @@
 
 recipe wp-ibm
   desc Login SSO IBM Verify -> WordPress wp-admin (self-healing via IBMid -> Google)
-  domains YOUR-TENANT.verify.ibm.com, login.ibm.com, YOUR-WP.example.com
-  start https://YOUR-TENANT.verify.ibm.com/usc
+  domains ${ISV_TENANT}, login.ibm.com, ${WP_HOST}
+  start https://${ISV_TENANT}/usc
   goal url /wp-admin
   user sel #wp-admin-bar-my-account .display-name, #wpadminbar .display-name
 
@@ -25,7 +25,7 @@ recipe wp-ibm
     clickAndWaitUrl "IBM Verify" "/wp-admin" 20000
 
 recipe intencion-fabian
-  start https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/attributes
+  start https://${ISV_TENANT}/ui/admin/directory/attributes
   goal url /ui/admin/applications/sts-clients
   meta _recorded "2026-11-01T05:38:07.119Z"
   meta _draft true
@@ -62,8 +62,8 @@ recipe intencion-fabian
 
 recipe isv-create-group
   desc Crea un grupo via UI (Users>Groups>Add group). Vars: groupName, groupDesc. API-first: SCIM POST /v2.0/Groups.
-  domains YOUR-TENANT.verify.ibm.com
-  start https://YOUR-TENANT.verify.ibm.com/ui/admin/users
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/ui/admin/users
   goal text was created|group created|successfully|added
   meta _verified "ref-ibm-verify-admin.md Create group (tested e2e)"
 
@@ -78,8 +78,8 @@ recipe isv-create-group
 
 recipe isv-add-user
   desc Alta de usuario via UI (Users>Add user). Vars: idp(dropdown), givenName, surname, userName, email. API-first: SCIM POST /v2.0/Users.
-  domains YOUR-TENANT.verify.ibm.com
-  start https://YOUR-TENANT.verify.ibm.com/ui/admin/users
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/ui/admin/users
   goal text was created|user created|successfully|added
   meta _verified "ref-ibm-verify-admin.md Add user"
 
@@ -98,8 +98,8 @@ recipe isv-add-user
 
 recipe isv-add-attribute
   desc Crea atributo custom (4 pasos). Vars: attrName, attrId(solo letras/digitos), attrDesc, attrIdentifier. No hay API verificada de escritura; GET /v1.0/attributes para leer.
-  domains YOUR-TENANT.verify.ibm.com
-  start https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/attributes
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/ui/admin/directory/attributes
   goal text was created|attribute created|successfully|added
   meta _verified "ref-ibm-verify-admin.md Add attribute (tested)"
 
@@ -122,8 +122,8 @@ recipe isv-add-attribute
 
 recipe isv-add-oidc-idp
   desc Federa un IdP OIDC Enterprise (tearsheet 6 pasos). Vars: idpName, idpRealm(issuer), friendlyName, clientId, wellknown. Secret lo pega el usuario. Redirect a dar al IdP: https://<tenant>/auth/redirect.
-  domains YOUR-TENANT.verify.ibm.com
-  start https://YOUR-TENANT.verify.ibm.com/ui/admin/directory/identity-providers
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/ui/admin/directory/identity-providers
   goal text was created|identity provider|successfully|added
   meta _verified "ref-ibm-verify-admin.md Add identity provider OIDC Enterprise (tested 2026-10-31)"
 
@@ -150,8 +150,8 @@ recipe isv-add-oidc-idp
 
 recipe isv-add-oidc-app
   desc Crea aplicacion OpenID Connect. Vars: appName, companyName, appUrl, redirectUri. client_id/secret se generan al guardar. API-first lectura: GET /v1.0/applications.
-  domains YOUR-TENANT.verify.ibm.com
-  start https://YOUR-TENANT.verify.ibm.com/ui/admin/applications/applications
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/ui/admin/applications/applications
   goal text application was|was updated|was created|successfully
   meta _verified "ref-ibm-verify-admin.md Add an application + OIDC app General/Sign-on (tested 2026-10-31)"
 
@@ -172,8 +172,8 @@ recipe isv-add-oidc-app
 
 recipe isv-assign-entitlement
   desc Asigna acceso (entitlement) a una app via tab Entitlements. Vars: appName, grantee. Flujo: abrir app, tab Entitlements, Automatic access (todos) o Select users/groups. API lectura: POST /v1.0/entitlements/search.
-  domains YOUR-TENANT.verify.ibm.com
-  start https://YOUR-TENANT.verify.ibm.com/ui/admin/applications/applications
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/ui/admin/applications/applications
   goal text was updated|access|workflow|successfully
   meta _verified "ref-ibm-verify-admin.md App Entitlements tab"
 
@@ -216,9 +216,109 @@ recipe runpod-login
     clickText "(Sign up|Sign in) with Google"
     wait 1500
 
-  on text "Choose an account|demo-user"
-    clickText "demo-user"
+  on text "Choose an account|${GOOGLE_ACCOUNT}"
+    clickText "${GOOGLE_ACCOUNT}"
     waitText "Hello," 15000
+
+recipe isv-apps
+  desc IBM Verify admin -> Applications (read-only smoke, self-healing IBMid->Google)
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/ui/admin/applications
+  goal text Add application|Application gateway|Applications
+  user sel .pf-c-page__header, .admin-header
+
+  on text "Sign in another way|Cloud Directory"
+    clickText "Sign in another way"
+    wait 600
+    clickText "^IBMid$"
+    waitText "Continue with Google|Add application|Choose an account" 15000
+
+  on text "Continue with Google"
+    clickText "Continue with Google"
+    waitText "Add application|Choose an account|${GOOGLE_ACCOUNT}" 20000
+
+  on text "Choose an account"
+    clickText "${GOOGLE_ACCOUNT}|@gmail"
+    waitText "Add application|Applications" 20000
+
+recipe isv-portal
+  desc IBM Verify user App center (live via WordPress-OIDC login, user isv)
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/usc
+  goal text App center|My apps|My accesses
+  user sel .app-tile-wrapper
+
+  on text "My apps"
+    waitText "App center|My apps" 15000
+
+recipe isv-login
+  desc Login admin al tenant via WordPress OIDC (user isv), self-healing
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/ui/admin/applications
+  goal text Add application|Application gateway
+  user sel .pf-c-page, .admin-header
+
+  on text "Choose an option"
+    click "#dropdown-text"
+    wait 700
+    clickText "^WordPress OIDC$"
+    waitText "Powered by WordPress|Lost your password|Add application|Application gateway" 15000
+
+  on text "Do you want to log in"
+    clickText "^Authorize$"
+    waitText "Add application|Application gateway" 20000
+
+  on text "Powered by WordPress"
+    type "#user_login" "${ISV_USER}"
+    type "#user_pass" "${ISV_PASS}"
+    click "#wp-submit"
+    waitText "Do you want to log in|Add application|Application gateway" 20000
+
+recipe isv-branding
+  desc Cambiar la PANTALLA DE LOGIN (Branding/themes)
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/ui/admin/branding
+  goal url /ui/admin/branding
+  user sel .pf-c-page
+
+  on text "Choose an option"
+    click "#dropdown-text"
+    wait 700
+    clickText "^WordPress OIDC$"
+    waitText "Powered by WordPress|Lost your password|Add application|Application gateway" 15000
+
+  on text "Do you want to log in"
+    clickText "^Authorize$"
+    waitText "Add application|Application gateway" 20000
+
+  on text "Powered by WordPress"
+    type "#user_login" "${ISV_USER}"
+    type "#user_pass" "${ISV_PASS}"
+    click "#wp-submit"
+    waitText "Do you want to log in|Add application|Application gateway" 20000
+
+recipe isv-flows
+  desc Cambiar los LOGIN FLOWS (sign-in options / identity providers)
+  domains ${ISV_TENANT}
+  start https://${ISV_TENANT}/ui/admin/security/sign-in-options
+  goal url /security/sign-in-options
+  user sel .pf-c-page
+
+  on text "Choose an option"
+    click "#dropdown-text"
+    wait 700
+    clickText "^WordPress OIDC$"
+    waitText "Powered by WordPress|Lost your password|Add application|Application gateway" 15000
+
+  on text "Do you want to log in"
+    clickText "^Authorize$"
+    waitText "Add application|Application gateway" 20000
+
+  on text "Powered by WordPress"
+    type "#user_login" "${ISV_USER}"
+    type "#user_pass" "${ISV_PASS}"
+    click "#wp-submit"
+    waitText "Do you want to log in|Add application|Application gateway" 20000
 
 recipe gh-new-issue
   desc Open a GitHub repo and start a new issue (DSL smoke recipe)

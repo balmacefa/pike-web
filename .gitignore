@@ -4,3 +4,6 @@ node_modules/
 # tenant/demo data & screenshots excluded from public release
 *.png
 janus/isv-catalog.json
+
+# local secrets / config
+.env

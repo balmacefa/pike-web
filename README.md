@@ -24,9 +24,28 @@ Browser toolbox that drives a running Chrome over CDP (DevTools 9222) to automat
 
 ```bash
 npm install
+cp .env.example .env               # then fill in your values
 bash scripts/pike-chrome.sh        # launch Chrome in debug mode
 node core/pweb.mjs tabs         # list open tabs
 ```
+
+## Configuration (`.env`)
+
+Recipes keep **no tenant hostnames or credentials** in source. Instead they use
+`${VAR}` placeholders that `engine.mjs` resolves at runtime from, in order:
+
+1. CLI args: `node core/engine.mjs isv-login ISV_USER=alice`
+2. A local `.env` file (gitignored) -- copy `.env.example` and fill it in
+3. The process environment
+
+| Variable | Purpose |
+|---|---|
+| `ISV_TENANT` | Your IBM Verify tenant host (e.g. `acme.verify.ibm.com`) |
+| `ISV_USER` / `ISV_PASS` | Admin credentials for the `isv-*` login recipes |
+| `WP_HOST` | (optional) WordPress OIDC demo IdP host |
+| `GOOGLE_ACCOUNT` | (optional) account label matched in the Google SSO chooser |
+
+`.env` is in `.gitignore`; only `.env.example` (placeholders) is committed.
 
 ## Notes
 

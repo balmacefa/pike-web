@@ -257,7 +257,7 @@
     }
   },
   "createdResources": {
-    "comment": "Recursos ADITIVOS creados en FASE-2 (prefijo isv-dsl-). Fabian puede borrarlos con los ids/paths de abajo.",
+    "comment": "Recursos ADITIVOS creados en FASE-2 (prefijo isv-dsl-). the operator puede borrarlos con los ids/paths de abajo.",
     "group": {
       "displayName": "isv-dsl-group",
       "id": "8A500033P2",
@@ -316,13 +316,13 @@
     "ropcRequest": "application/x-www-form-urlencoded: grant_type=password, client_id, client_secret, username (userName PLANO, sin @realm), password, scope=openid",
     "BLOCKER": "Cloud Directory fuerza cambio de password en primer login: pwdReset=true es server-controlled (ignora el valor en create y rechaza PATCH CSIAI0174E). ROPC devuelve 400 invalid_grant CSIAQ0267E 'The password must be changed'. Credenciales SÍ matchean (prueba: username plano da ese error; username@realm da CSIAQ0264E invalid).",
     "opcionesParaDesbloquear": [
-      "(a) Fabián relaja el password policy de Cloud Directory: quitar 'requerir cambio de contraseña en primer inicio/para cuentas nuevas' (cambio de tenant, afecta a todas las cuentas nuevas).",
+      "(a) the operator relaja el password policy de Cloud Directory: quitar 'requerir cambio de contraseña en primer inicio/para cuentas nuevas' (cambio de tenant, afecta a todas las cuentas nuevas).",
       "(b) La simulación hace un paso único de cambio de password por usuario (flujo change-password ISV) para limpiar pwdReset antes del login masivo.",
       "(c) Usar el carril web-authcode (simulate-logins-web.mjs) que maneja la pantalla de cambio de password de forma interactiva."
     ],
     "caveatMFA": "Si el access policy fuerza MFA, ROPC falla igual -> usar grant policyauth o carril web.",
     "opcionB_NO_FACTIBLE_VIA_ADMIN": "PROBADO: limpiar pwdReset como ADMIN no se puede. PATCH replace 'password' -> 204 OK pero pwdReset SIGUE true. PATCH del flag extension pwdReset -> rechazado (CSIAI0174E / CSIAI0097E path invalido). /v2.0/Me/password es solo self (cambia al admin, no a otro usuario). Solo el PROPIO usuario puede limpiarlo cambiando su pass (old->new) con SU token, que ROPC no puede emitir mientras pwdReset=true (chicken-and-egg). => NO insertar nodo 'clear pwdReset' en n8n; no hay endpoint admin que funcione.",
-    "recomendacion": "Opcion (a) es la via limpia para el bulk: Fabian desactiva en el password policy de Cloud Directory el 'cambio obligatorio en primer login / para cuentas nuevas'. Con eso los usuarios SCIM nuevos nacen pwdReset=false y las plantillas create-user + ROPC funcionan para el masivo SIN nodo extra. Alternativa (c) carril web-authcode. Ubicacion UI del toggle: consola admin, ajustes de contrasena de Cloud Directory (Authentication/seguridad de contrasena)."
+    "recomendacion": "Opcion (a) es la via limpia para el bulk: the operator desactiva en el password policy de Cloud Directory el 'cambio obligatorio en primer login / para cuentas nuevas'. Con eso los usuarios SCIM nuevos nacen pwdReset=false y las plantillas create-user + ROPC funcionan para el masivo SIN nodo extra. Alternativa (c) carril web-authcode. Ubicacion UI del toggle: consola admin, ajustes de contrasena de Cloud Directory (Authentication/seguridad de contrasena)."
   },
   "accessCertCampaign": {
     "verifiedAt": "2026-11-01T22:51:13.500Z",

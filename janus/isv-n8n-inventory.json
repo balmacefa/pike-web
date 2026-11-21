@@ -89,7 +89,7 @@
     "flow": "Trigger -> Build Users (Code: [{username,password}]) -> Loop Over Logins (SplitInBatches batch=5) -> ROPC Login (onError=continueRegularOutput, neverError) -> Tally Result (ok/status) -> loop",
     "credential": "UDOahacpStSXHeZh (httpCustomAuth, client_id/secret ROPC)",
     "params": ["users[] en nodo Build Users (username+password)", "batchSize en Loop Over Logins (throttle)"],
-    "dependencies": "pike-web debe: (1) crear app OIDC con ropc:true via add-oidc-app y entregar client_id/secret -> pegar en credencial UDOahacpStSXHeZh; (2) provisionar usuarios con password conocido. Fabian: definir objetivo+escala. Si politica fuerza MFA, ROPC falla -> usar carril web-authcode.",
+    "dependencies": "pike-web debe: (1) crear app OIDC con ropc:true via add-oidc-app y entregar client_id/secret -> pegar en credencial UDOahacpStSXHeZh; (2) provisionar usuarios con password conocido. the operator: definir objetivo+escala. Si politica fuerza MFA, ROPC falla -> usar carril web-authcode.",
     "status": "PRE-CONSTRUIDO inactivo, validado 0err/0warn. Opcional (paso 2 del plan de D), a la espera de priorizacion de pike-web."
   },
   "all_reconciled": true,

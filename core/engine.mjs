@@ -40,10 +40,33 @@ function mark(n){ const ms=Date.now()-t0; marks.push([n,ms]); if(!QUIET) console
 function out(o){ console.log(JSON.stringify(o)); }
 const rx = (m) => (m instanceof RegExp ? m : new RegExp(m,'i'));
 
+// ---- .env loader (zero-dep) + ${VAR} substitution ------------------------------------
+function loadDotenv(p){
+  if (!existsSync(p)) return;
+  for (const line of readFileSync(p,'utf8').split(/\r?\n/)){
+    if (!line.trim() || line.trim().startsWith('#')) continue;
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)$/);
+    if (!m) continue;
+    const val = m[2].trim().replace(/^["']|["']$/g,'');
+    if (!(m[1] in process.env)) process.env[m[1]] = val;
+  }
+}
+loadDotenv(resolve(HERE,'.env'));
+loadDotenv(resolve(HERE,'..','.env'));
+function substVars(s){
+  return s.replace(/\$\{([A-Z0-9_]+)\}/g, (_, k) => (k in vars ? vars[k] : (process.env[k] ?? '${'+k+'}')));
+}
+function deepSubst(o){
+  if (typeof o === 'string') return substVars(o);
+  if (Array.isArray(o)) return o.map(deepSubst);
+  if (o && typeof o === 'object'){ const r={}; for (const k in o) r[k]=deepSubst(o[k]); return r; }
+  return o;
+}
+
 // ---- Recipe book (memory on disk; Pike syncs to L2) ----------------------------------
-const book = BOOK_SRC === 'pweb' ? compile(readFileSync(PWEB,'utf8'))
+const book = deepSubst(BOOK_SRC === 'pweb' ? compile(readFileSync(PWEB,'utf8'))
   : existsSync(JSONB) ? JSON.parse(readFileSync(JSONB,'utf8'))
-  : { recipes:{} };
+  : { recipes:{} });
 function findRecipe(t){
   if (book.recipes[t]) return book.recipes[t];                                   // by name
   const host = (() => { try { return new URL(t).host; } catch { return null; } })();

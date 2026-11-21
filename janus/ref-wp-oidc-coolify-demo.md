@@ -16,7 +16,7 @@ description: "Desplegar WordPress demo en Coolify tras Cloudflare, cargar datos 
 | U | usuario (lo hace él, no Claude) |
 | JS | eval vía javascript_tool (fast-browser-js) |
 | N | nonce REST WP |
-| H | host WP = wordpress-<id>.balmacefa.com (actual: wordpress-cq8frf4wsxluhjf7qezakz1k.balmacefa.com) |
+| H | host WP = your-wp.example.com (actual: your-wp.example.com) |
 | T | tenant Verify = YOUR-TENANT.verify.ibm.com |
 | CS | plugin Code Snippets |
 | OCS | plugin openid-connect-server |
@@ -55,7 +55,7 @@ Redirect URI de Verify = `https://T/auth/redirect` → reemplazar `redirect_uri`
 ## Dirección contraria: Verify → login de wp-admin ✅ 2026-10-31
 1. Verify: app OIDC "WordPress Admin": App URL https://H/wp-login.php, redirect `https://H/wp-admin/admin-ajax.php?action=openid-connect-authorize`, PKCE off, IdPs IBMid + Cloud Directory (no WordPress OIDC → bucle), entitlement solo el usuario de U.
 2. WP: instalar OGC. Ajustes → OpenID Connect Client (`openid_connect_generic_settings[...]`; ojo: cada checkbox tiene un hidden gemelo, usar `input[type=checkbox][name=...]`): login_type button, texto "Iniciar sesión con IBM Verify", scope `openid email profile`, endpoint_login `https://T/oauth2/authorize`, end_session `https://T/oauth2/rplogout`, issuer `https://T/oauth2`, token/userinfo/jwks → Worker (paso 4), http_request_timeout 30, identity_key/nickname preferred_username, email_format {email}, link_existing_users ✓, create_if_does_not_exist ✗, redirect_user_back ✓.
-3. Admin WP con el email de U (`fabian`, administrator) — OGC vincula por email, no asigna roles. Crear con user-new.php (+ `.wp-generate-pw`, sin notificación).
+3. Admin WP con the operator email (admin) — OGC vincula por email, no asigna roles. Crear con user-new.php (+ `.wp-generate-pw`, sin notificación).
 4. **Bloqueo Akamai**: el servidor WP (IP pública 13.140.156.98, AWS) no puede hablar con T (HTTP/2 INTERNAL_ERROR inmediato, HTTP/1.1 cuelga; cualquier UA; IPv4 forzado no ayuda). Solución: Worker CF `verify-oidc-proxy` (https://verify-oidc-proxy.YOUR-SUBDOMAIN.workers.dev) que reenvía solo `/oauth2/{token,userinfo,jwks}` a T (borra host/cf-*/x-forwarded-*). Authorize va directo desde el navegador.
 5. U copia Client secret de Verify (icono copiar de la fila Client secret, NO el portapapeles de Client ID ni 🔄) → pega en "Client Secret Key" → Save. Verificar sin leer: len≠36 y ≠ client_id.
 6. Probar: logout WP → wp-login.php → botón → Verify (consentimiento lo acepta U) → wp-admin. Comprobar `/wp-json/wp/v2/users/me?context=edit` → username/roles.
